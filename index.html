@@ -31,7 +31,15 @@ button{cursor:pointer}
 :focus-visible{outline:2px solid var(--cap);outline-offset:2px}
 [hidden]{display:none !important}
 img{max-width:100%}
-.wrap{max-width:680px;margin:0 auto;padding:0 16px 96px}
+#bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;display:grid;grid-template-columns:repeat(var(--bgc,4),1fr);align-content:start;gap:3px;opacity:.62;filter:saturate(.9)}
+#bg img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#dfe6ef}
+.wrap{position:relative;z-index:1;max-width:680px;min-height:100vh;margin:0 auto;padding:0 16px 96px;background:rgba(238,243,248,.78);box-shadow:0 0 60px 30px rgba(238,243,248,.78)}
+.strip{display:flex;align-items:center;padding:2px 0 12px 8px;min-height:20px}
+.strip button{border:3px solid #fff;padding:0;background:#dfe6ef;width:62px;height:62px;border-radius:12px;overflow:hidden;margin-left:-8px;box-shadow:0 4px 12px rgba(31,42,68,.22);transform:rotate(var(--r,0deg));flex:none}
+.strip button:nth-child(odd){--r:-5deg}
+.strip button:nth-child(even){--r:4deg;margin-top:10px}
+.strip img{display:block;width:100%;height:100%;object-fit:cover}
+.strip .more{margin-left:12px;white-space:nowrap;font-family:var(--font-hand);font-size:22px;color:var(--cap);font-weight:700}
 
 header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:26px 0 14px}
 .brand .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--leaf);font-weight:600}
@@ -39,7 +47,7 @@ header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:1
 .brand h1 b{font-style:normal;font-weight:500;color:var(--cap)}
 .top a{font-size:13px;color:var(--mist);text-underline-offset:3px;white-space:nowrap}
 
-nav.tabs{position:sticky;top:0;z-index:5;display:flex;gap:6px;padding:10px 16px;margin:0 -16px;background:var(--night);overflow-x:auto;scrollbar-width:none}
+nav.tabs{position:sticky;top:0;z-index:5;display:flex;gap:6px;padding:10px 16px;margin:0 -16px;background:rgba(238,243,248,.95);overflow-x:auto;scrollbar-width:none}
 nav.tabs::-webkit-scrollbar{display:none}
 .tabs a{flex:none;background:#fff;text-decoration:none;padding:8px 14px;border-radius:99px;border:1.5px solid #d3dce8;color:var(--mist);font-weight:600;font-size:15px;white-space:nowrap}
 .tabs a[aria-current="page"]{background:var(--cloth);border-color:var(--cloth);color:#fff}
@@ -171,6 +179,7 @@ nav.tabs::-webkit-scrollbar{display:none}
 </style>
 </head>
 <body>
+<div id="bg" aria-hidden="true"></div>
 <div id="gate"><div class="in">
   <span class="eyebrow" style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--leaf);font-weight:600">Özel pano</span>
   <h1>Anı Panosu</h1>
@@ -194,6 +203,7 @@ nav.tabs::-webkit-scrollbar{display:none}
     </div>
     <button type="button" id="cikis" class="linkbtn">Çıkış</button>
   </header>
+  <div class="strip" id="strip"></div>
   <nav class="tabs" id="tabs" aria-label="Bölümler"></nav>
   <div class="status" id="status" role="status">Pano açılıyor…</div>
   <main id="main"></main>
@@ -785,12 +795,37 @@ function renderX(main){
   row.appendChild(plus); row.appendChild(minus); main.appendChild(row);
 }
 
+var DECO = { key:"", urls:[] };
+function decoPick(list, n, seed){ var a = list.slice(), out = [], x = seed || 7; while(a.length && out.length < n){ x = (x * 16807) % 2147483647; out.push(a.splice(x % a.length, 1)[0]); } return out; }
+function decoBg(){
+  var bg = $("bg"), u = DECO.urls; bg.textContent = ""; if(!u.length) return;
+  var w = window.innerWidth, h = window.innerHeight, cols = Math.max(3, Math.round(w / 150)), size = w / cols, rows = Math.ceil(h / size) + 1, n = cols * rows;
+  bg.style.setProperty("--bgc", cols);
+  var pool = decoPick(u, Math.min(u.length, 28), 11);
+  for(var i = 0; i < n; i++){ var im = el("img"); im.alt = ""; im.decoding = "async"; im.src = pool[(i * 5 + Math.floor(i / cols) * 3) % pool.length]; bg.appendChild(im); }
+}
+function deco(){
+  var items = []; defterList().forEach(function(d){ (d.foto || []).forEach(function(f){ var s = photoSrc(f); if(s) items.push({id:d._id, src:s}); }); });
+  var key = items.length + ":" + (items[0] ? items[0].src : "");
+  if(key === DECO.key) return; DECO.key = key; DECO.urls = items.map(function(x){ return x.src; });
+  decoBg();
+  var st = $("strip"); st.textContent = "";
+  decoPick(items, window.innerWidth < 480 ? 5 : 7, 23).forEach(function(it){
+    var b = el("button"); b.type = "button"; b.setAttribute("aria-label", "Bu anının sayfasını aç");
+    var im = el("img"); im.alt = ""; im.src = it.src; b.appendChild(im);
+    b.addEventListener("click", function(){ setPage(it.id); if(route() === "akis") render(); else location.hash = "#akis"; }); st.appendChild(b);
+  });
+  st.appendChild(el("span", "more", items.length + " kare"));
+}
+var decoT = null; window.addEventListener("resize", function(){ clearTimeout(decoT); decoT = setTimeout(decoBg, 300); });
+
 function render(){
   var r = route(), main = $("main"), keepY = window.scrollY;
   renderTabs(r);
   $("add").hidden = !(S.loaded && canEdit()) || r === "soru" || r === "x";
   main.textContent = "";
   if(!S.loaded) return;
+  deco();
   var all = S.docs;
   if(r === "akis"){ renderDefter(main);
   } else if(r === "fotograflar"){ renderFoto(main);
