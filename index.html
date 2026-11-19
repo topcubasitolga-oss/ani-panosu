@@ -391,7 +391,7 @@ $("icefile").addEventListener("change", function(){
   }).catch(function(e){ say("İçe aktarma yarıda kaldı: " + (e && e.message || "bilinmeyen hata") + ". Aynı dosyayı tekrar seçersen kaldığı yerden devam eder."); refresh(); });
 });
 
-sb.auth.getSession().then(function(r){ if(r.data && r.data.session) boot(r.data.session); else { show("login"); } }).catch(function(){ show("login"); });
+sb.auth.getSession().then(function(r){ if(r.data && r.data.session) boot(r.data.session); else { gateMsg(""); show("login"); } }).catch(function(){ gateMsg(""); show("login"); });
 })();
 </script>
 <script>
