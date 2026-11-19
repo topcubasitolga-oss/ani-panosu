@@ -16,6 +16,7 @@ create or replace function public.pano_uye() returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (select 1 from public.izinli where lower(email) = lower(auth.jwt() ->> 'email'));
 $$;
+grant execute on function public.pano_uye() to authenticated;
 
 create policy "uye kayitlar" on public.kayitlar for all to authenticated using (public.pano_uye()) with check (public.pano_uye());
 create policy "uye sorular" on public.sorular for all to authenticated using (public.pano_uye()) with check (public.pano_uye());
