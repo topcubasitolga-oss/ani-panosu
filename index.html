@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anı Panosu</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Figtree:wght@400;600&family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* layout: one column of white cards on a pale blue board; a scrolling strip of sections on top */
+  --night:#eef3f8;   /* board: cool morning light */
+  --cloth:#1f2a44;   /* navy: buttons, active tab */
+  --paper:#ffffff;   /* cards */
+  --ink:#1f2a44;     /* text */
+  --cap:#e5516b;     /* rose accent */
+  --leaf:#3b8ea5;    /* teal secondary */
+  --mist:#55627d;    /* quiet text on board */
+  --font-display:"Fraunces","Iowan Old Style",Georgia,serif;
+  --font-hand:"Caveat","Segoe Print","Bradley Hand",cursive;
+  --font-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--night);color:var(--mist);font-family:var(--font-body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--cap);outline-offset:2px}
+[hidden]{display:none !important}
+img{max-width:100%}
+.wrap{max-width:680px;margin:0 auto;padding:0 16px 96px}
+
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:26px 0 14px}
+.brand .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--leaf);font-weight:600}
+.brand h1{font-family:var(--font-display);font-style:italic;font-weight:400;font-size:38px;line-height:1;margin:4px 0 0;color:var(--ink)}
+.brand h1 b{font-style:normal;font-weight:500;color:var(--cap)}
+.top a{font-size:13px;color:var(--mist);text-underline-offset:3px;white-space:nowrap}
+
+nav.tabs{position:sticky;top:0;z-index:5;display:flex;gap:6px;padding:10px 16px;margin:0 -16px;background:var(--night);overflow-x:auto;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+.tabs a{flex:none;background:#fff;text-decoration:none;padding:8px 14px;border-radius:99px;border:1.5px solid #d3dce8;color:var(--mist);font-weight:600;font-size:15px;white-space:nowrap}
+.tabs a[aria-current="page"]{background:var(--cloth);border-color:var(--cloth);color:#fff}
+
+.status{margin:10px 0;padding:10px 14px;border-radius:10px;background:#ffffff;border:1px solid #d3dce8;font-size:14px}
+.day{display:flex;align-items:baseline;gap:10px;margin:26px 0 10px}
+.day h2{font-family:var(--font-display);font-weight:500;font-size:22px;margin:0;color:var(--ink)}
+.day span{font-size:13px;color:var(--leaf)}
+.sec-hint{font-size:14px;margin:-4px 0 12px;color:var(--mist)}
+.empty{padding:18px;border:1.5px dashed #d3dce8;border-radius:12px;font-size:15px}
+.list{display:flex;flex-direction:column;gap:14px}
+
+.card{background:var(--paper);color:var(--ink);border-radius:16px;padding:18px 18px 14px;display:flex;flex-direction:column;gap:10px;border-top:4px solid var(--cap);box-shadow:0 1px 2px rgba(31,42,68,.06),0 10px 28px rgba(31,42,68,.08)}
+.card.yer,.card.lezzet{border-top-color:var(--leaf)}
+.card.gun,.card.soz,.card.yapilacak{border-top-color:var(--cloth)}
+.card .head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+.chip{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;padding:3px 8px;border-radius:99px;background:var(--cloth);color:var(--paper)}
+.chip.c-cap{background:var(--cap);color:#fff}
+.chip.c-leaf{background:var(--leaf);color:#fff}
+.chip.c-line{background:transparent;color:var(--ink);border:1.5px solid rgba(31,42,68,.55)}
+.chip.wish{background:transparent;color:var(--ink);border:1.5px dashed rgba(31,42,68,.5)}
+.card h3{font-family:var(--font-display);font-weight:500;font-size:21px;line-height:1.15;margin:0;flex-basis:100%;text-wrap:balance}
+.card.soz h3{font-family:var(--font-hand);font-weight:700;font-size:30px;line-height:1.05}
+.meta{font-size:13px;color:rgba(31,42,68,.7)}
+.count{font-family:var(--font-display);font-weight:500;font-size:17px;color:var(--cap)}
+.photos{display:grid;gap:6px;grid-template-columns:1fr}
+.photos.many{grid-template-columns:1fr 1fr}
+.photos button{border:0;padding:0;background:none;border-radius:6px;display:block;cursor:zoom-in}
+.photos img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:#e6ecf3;border-radius:6px}
+.photos.many img{aspect-ratio:1}
+.note{font-family:var(--font-hand);font-size:23px;line-height:1.12;margin:0;white-space:pre-wrap}
+.stars{display:flex;flex-direction:column;gap:4px;font-size:14px}
+.stars .row{display:flex;align-items:center;gap:8px}
+.stars .who{min-width:92px;color:rgba(31,42,68,.75)}
+.stars button{border:0;background:none;padding:2px 3px;font-size:22px;line-height:1;color:rgba(31,42,68,.25)}
+.stars button.on,.stars .ro b{color:var(--cap)}
+.stars .ro{font-size:18px;letter-spacing:2px;color:rgba(31,42,68,.25)}
+.stars .ro b{font-weight:400}
+.comments{display:flex;flex-direction:column;gap:6px;border-top:1px solid rgba(31,42,68,.14);padding-top:10px}
+.cm{font-size:15px}
+.cm b{font-weight:600}
+.cm time{font-size:12px;color:rgba(31,42,68,.55);margin-left:6px}
+.cmform{display:flex;gap:6px}
+.cmform input{flex:1;min-width:0;padding:9px 11px;border-radius:9px;border:1.5px solid rgba(31,42,68,.25);background:#ffffff;color:var(--ink)}
+.btn{border:0;border-radius:9px;padding:9px 13px;background:var(--cloth);color:var(--paper);font-weight:600;font-size:14px}
+.btn.cap{background:var(--cap);color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid rgba(31,42,68,.3)}
+.btn.onboard{background:#fff;color:var(--mist);border:1.5px solid #d3dce8}
+.btn.danger{background:#a3331a;color:#fff}
+.btn:disabled{opacity:.55;cursor:progress}
+.acts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.acts .by{margin-right:auto;font-size:12px;color:rgba(31,42,68,.6)}
+.acts .btn{padding:6px 10px;font-size:13px}
+
+.pager{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0}
+.pager .btn{padding:10px 16px;font-size:15px;min-width:104px}
+.pager .btn:disabled{opacity:.35;cursor:default}
+.pager .mid{display:flex;flex-direction:column;align-items:center;font-size:14px;font-variant-numeric:tabular-nums}
+.pager .mid button{border:0;background:none;padding:2px 4px;font-size:12px;color:var(--leaf);text-decoration:underline;text-underline-offset:3px}
+.card.page{touch-action:pan-y}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.grid3 button{border:0;padding:0;background:#dfe6ef;display:block;border-radius:8px;overflow:hidden}
+.grid3 img{display:block;width:100%;aspect-ratio:1;object-fit:cover}
+.card.planli{background-color:#fff4d1;border-top-color:#e9c46a}
+.count.plan{align-self:flex-start;font-family:var(--font-body);font-weight:600;font-size:14px;color:#3d2c00;background:#e9c46a;border-radius:99px;padding:4px 12px}
+.mapbox .pin.plan{fill:#e9c46a;stroke:#1c2a21}
+.legend{display:flex;gap:14px;font-size:13px;margin:8px 0 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;background:var(--cap)}
+.legend i.p{background:#e9c46a}
+.xbtns{display:flex;gap:8px;margin-top:12px}
+.xbtns .btn{padding:12px 20px;font-size:16px}
+.together{margin-top:18px;padding:20px 22px;border-radius:16px;background:var(--cloth);color:#fff;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.together b{font-family:var(--font-display);font-weight:500;font-size:56px;line-height:.9;color:#ff9fb0;font-variant-numeric:tabular-nums}
+.together span{font-size:15px}
+
+.mapbox{margin-top:16px;border-radius:14px;overflow:hidden;background:#dbe9f4;border:1px solid #d3dce8}
+.mapbox svg{display:block;width:100%;height:auto;touch-action:manipulation}
+.mapbox .sea{fill:#dbe9f4}
+.mapbox .land{fill:#f9fbfd;stroke:#c3d2e0;stroke-width:.6;vector-effect:non-scaling-stroke}
+.mapbox .home{fill:#ffe1e6;stroke:#e5516b;stroke-width:1;vector-effect:non-scaling-stroke}
+.mapbox .pin{fill:var(--cap);stroke:#ffffff;stroke-width:1.5;vector-effect:non-scaling-stroke}
+.mapbox .pin.sel{fill:#1f2a44;stroke:#ffffff;stroke-width:2.5}
+.mapbox .hit{fill:transparent;cursor:pointer}
+.maptools{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:10px 0 0;font-size:14px}
+.sheet .mapbox{margin-top:6px;border-color:rgba(31,42,68,.3)}
+
+.qa{display:flex;flex-direction:column;gap:8px}
+.qa textarea{width:100%;min-height:84px;padding:10px 11px;border-radius:9px;border:1.5px solid rgba(31,42,68,.3);background:#ffffff;color:var(--ink);color-scheme:light;resize:vertical}
+.ans{border-left:3px solid var(--cap);padding:2px 0 2px 10px}
+.ans b{display:block;font-size:13px;font-weight:600;color:rgba(31,42,68,.7)}
+.ans p{margin:0;font-family:var(--font-hand);font-size:23px;line-height:1.12;white-space:pre-wrap}
+.ans.wait p{font-family:var(--font-body);font-size:14px;color:rgba(31,42,68,.7)}
+
+#add{position:fixed;right:16px;bottom:18px;z-index:6;border:0;border-radius:99px;padding:14px 20px;background:var(--cap);color:#fff;font-weight:600;font-size:16px;box-shadow:0 10px 24px rgba(229,81,107,.4)}
+
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(31,42,68,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet form{width:min(100%,680px);max-height:92vh;overflow:auto;background:var(--paper);color:var(--ink);border-radius:18px 18px 0 0;padding:18px 18px 22px;display:flex;flex-direction:column;gap:12px}
+@media (min-width:720px){.sheet{align-items:center}.sheet form{border-radius:18px}}
+.sheet h2{font-family:var(--font-display);font-weight:500;font-size:24px;margin:0}
+.f{display:flex;flex-direction:column;gap:4px}
+.f>label,.f>span{font-size:13px;font-weight:600}
+.f input[type=text],.f input[type=date],.f textarea,.f select{padding:10px 11px;border-radius:9px;border:1.5px solid rgba(31,42,68,.3);background:#ffffff;color:var(--ink);color-scheme:light;width:100%}
+.f textarea{min-height:92px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two.one{grid-template-columns:1fr}
+.check{display:flex;gap:8px;align-items:center;font-size:15px}
+.thumbs{display:flex;flex-wrap:wrap;gap:6px}
+.thumbs div{position:relative}
+.thumbs img{width:68px;height:68px;object-fit:cover;border-radius:6px;display:block}
+.thumbs button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:#a3331a;color:#fff;font-size:14px;line-height:1;padding:0}
+.formmsg{font-size:14px;color:#a3331a;min-height:20px}
+.sheet .acts{justify-content:flex-end}
+.sheet .acts .btn{padding:10px 16px;font-size:15px}
+.pinrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px}
+.pinrow .btn{padding:6px 10px;font-size:13px}
+
+.linkbtn{border:0;background:none;padding:0;font-size:13px;color:var(--mist);text-decoration:underline;text-underline-offset:3px}
+#gate{position:fixed;inset:0;z-index:40;background:var(--night);display:flex;align-items:center;justify-content:center;padding:24px}
+#gate .in{width:min(100%,360px);display:flex;flex-direction:column;gap:14px}
+#gate h1{font-family:var(--font-display);font-style:italic;font-weight:400;font-size:40px;line-height:1;margin:0;color:var(--ink)}
+#gate form{display:flex;flex-direction:column;gap:10px}
+#gate label{font-size:13px;font-weight:600;color:var(--ink)}
+#gate input{padding:12px 13px;border-radius:10px;border:1.5px solid #d3dce8;background:#fff;color:var(--ink);font-size:16px;width:100%}
+#gate .btn{padding:12px 16px;font-size:16px}
+#gatemsg{min-height:22px;font-size:14px;color:#a3331a}
+.foot{margin-top:40px;font-size:13px;text-align:center}
+#box{position:fixed;inset:0;z-index:30;background:rgba(8,12,10,.95);display:flex;align-items:center;justify-content:center;padding:14px;cursor:zoom-out}
+#box img{max-width:100%;max-height:100%;border-radius:6px}
+</style>
+</head>
+<body>
+<div id="gate"><div class="in">
+  <span class="eyebrow" style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--leaf);font-weight:600">Özel pano</span>
+  <h1>Anı Panosu</h1>
+  <form id="loginform" hidden autocomplete="on">
+    <label for="g-eposta">E-posta</label><input id="g-eposta" type="email" autocomplete="username" required>
+    <label for="g-sifre">Şifre</label><input id="g-sifre" type="password" autocomplete="current-password" required>
+    <button class="btn cap" id="g-giris" type="submit">Giriş yap</button>
+  </form>
+  <form id="nameform" hidden>
+    <label for="g-ad">Panoda görünecek adın</label><input id="g-ad" type="text" maxlength="30" required>
+    <button class="btn cap" type="submit">Devam et</button>
+  </form>
+  <div id="gatemsg" role="status" aria-live="polite">Açılıyor…</div>
+  <button class="btn onboard" id="gateout" type="button" hidden>Başka hesapla gir</button>
+</div></div>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="eyebrow">Anı panomuz</span>
+      <h1 id="cift">Anı Panosu</h1>
+    </div>
+    <button type="button" id="cikis" class="linkbtn">Çıkış</button>
+  </header>
+  <nav class="tabs" id="tabs" aria-label="Bölümler"></nav>
+  <div class="status" id="status" role="status">Pano açılıyor…</div>
+  <main id="main"></main>
+  <div class="foot"><button type="button" id="ice" class="linkbtn">Yedek dosyasından içe aktar</button><input type="file" id="icefile" accept="application/json,.json" hidden></div>
+</div>
+<button id="add" type="button" hidden>+ Yeni kayıt</button>
+
+<div class="sheet" id="sheet" hidden>
+  <form id="form" autocomplete="off">
+    <h2 id="formtitle">Yeni kayıt</h2>
+    <div class="f"><label for="f-tip">Tür</label><select id="f-tip"></select></div>
+    <div class="f"><label for="f-baslik" id="l-baslik">Ne yaptık?</label><input type="text" id="f-baslik" maxlength="160" required></div>
+    <label class="check" id="wishrow" hidden><input type="checkbox" id="f-istek"> <span id="l-istek"></span></label>
+    <label class="check" id="basrow" hidden><input type="checkbox" id="f-bas"> <span>Bu, birlikte olmaya başladığımız gün</span></label>
+    <div class="two" id="row2">
+      <div class="f" id="tarihbox"><label for="f-tarih" id="l-tarih">Tarih</label><input type="date" id="f-tarih"></div>
+      <div class="f" id="yerbox"><label for="f-yer" id="l-yer">Yer</label><input type="text" id="f-yer" maxlength="80" placeholder="İsteğe bağlı"></div>
+    </div>
+    <div class="f" id="pinbox">
+      <span>Haritadaki yeri</span>
+      <div class="pinrow"><span id="pinstate"></span>
+        <button class="btn ghost" type="button" id="pintoggle">Haritada işaretle</button>
+        <button class="btn ghost" type="button" id="pinview" hidden>Dünya haritası</button>
+        <button class="btn ghost" type="button" id="pinclear" hidden>İğneyi kaldır</button></div>
+      <div class="mapbox" id="pinmap" hidden></div>
+    </div>
+    <div class="f"><label for="f-not" id="l-not">Not</label><textarea id="f-not" maxlength="2000"></textarea></div>
+    <div class="f" id="photorow">
+      <span>Fotoğraflar</span>
+      <div class="thumbs" id="thumbs"></div>
+      <input type="file" id="f-foto" accept="image/*" multiple>
+    </div>
+    <div class="formmsg" id="formmsg" role="status" aria-live="polite"></div>
+    <div class="acts">
+      <button class="btn ghost" type="button" id="cancel">Vazgeç</button>
+      <button class="btn cap" type="submit" id="save">Kaydet</button>
+    </div>
+  </form>
+</div>
+<div id="box" hidden><img id="boximg" alt=""></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+(function(){
+"use strict";
+/* Supabase-backed stand-in for the data layer the page expects (window.claude.use). */
+var CFG = window.PANO_CONFIG || {}, ok = typeof CFG.url === "string" && CFG.url.indexOf("http") === 0 && !!CFG.key;
+var $ = function(id){ return document.getElementById(id); };
+var resolveReady, ready = new Promise(function(r){ resolveReady = r; });
+window.PANO_URL = {};
+window.claude = { use: function(k){ return ready.then(function(A){ return A[k] || null; }); } };
+
+function gateMsg(t){ $("gatemsg").textContent = t || ""; }
+function show(which){ $("gate").hidden = which === null; $("loginform").hidden = which !== "login"; $("nameform").hidden = which !== "name"; $("gateout").hidden = which !== "denied"; }
+
+if(!ok || !window.supabase){
+  show("none"); gateMsg(!ok ? "Kurulum tamamlanmadı: config.js dosyasına Supabase adresi ve anahtarı yazılmalı." : "Site gerekli dosyayı yükleyemedi. Bağlantını kontrol edip sayfayı yenile.");
+  return;
+}
+var sb = window.supabase.createClient(CFG.url, CFG.key), me = null, names = {}, cache = {}, subs = {};
+
+function E(e){ var c = e && (e.code || e.status || e.statusCode); return {code: (c === "42501" || c == 401 || c == 403) ? "invalid_argument" : "unavailable", message: e && e.message || ""}; }
+function rid(){ return (window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2)).replace(/-/g, "").slice(0, 20); }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function merge(a, b){ Object.keys(b).forEach(function(k){ if(b[k] && typeof b[k] === "object" && !Array.isArray(b[k]) && a[k] && typeof a[k] === "object" && !Array.isArray(a[k])) merge(a[k], b[k]); else a[k] = b[k]; }); }
+function now(){ return new Date().toISOString(); }
+
+function sign(list){
+  var need = [];
+  list.forEach(function(d){ (d && d.foto || []).forEach(function(f){ if(f && f.id && !window.PANO_URL[f.id] && need.indexOf(f.id) < 0) need.push(f.id); }); });
+  if(!need.length) return Promise.resolve();
+  return sb.storage.from("foto").createSignedUrls(need, 86400).then(function(r){
+    (r.data || []).forEach(function(x){ if(x && x.signedUrl && x.path) window.PANO_URL[x.path] = x.signedUrl; });
+  }).catch(function(){});
+}
+function emit(name){
+  var m = cache[name] || {}, ids = Object.keys(m).sort();
+  var snap = { docs: ids.map(function(id){ return {id:id, exists:true, data:function(){ return m[id]; }, metadata:{fromCache:false}}; }), metadata:{fromCache:false, hasPendingWrites:false} };
+  (subs[name] || []).forEach(function(f){ try{ f(snap); }catch(e){ console.error(e); } });
+}
+function load(name){
+  return sb.from(name).select("id,data").then(function(r){
+    if(r.error) throw E(r.error);
+    var m = {}; r.data.forEach(function(x){ m[x.id] = x.data || {}; });
+    return (name === "kayitlar" ? sign(r.data.map(function(x){ return x.data; })) : Promise.resolve()).then(function(){ cache[name] = m; emit(name); });
+  });
+}
+function put(name, id, d){ (cache[name] = cache[name] || {})[id] = d; emit(name); }
+function coll(name){
+  return {
+    doc: function(id){
+      id = id || rid();
+      return { id: id,
+        get: function(){ return sb.from(name).select("data").eq("id", id).maybeSingle().then(function(r){ if(r.error) throw E(r.error); return {id:id, exists: !!r.data, data:function(){ return r.data ? r.data.data : undefined; }}; }); },
+        set: function(d){ d = clone(d); return sb.from(name).upsert({id:id, data:d, guncel:now()}).then(function(r){ if(r.error) throw E(r.error); return sign([d]); }).then(function(){ put(name, id, d); }); },
+        update: function(d){
+          return sb.from(name).select("data").eq("id", id).maybeSingle().then(function(r){
+            if(r.error) throw E(r.error); if(!r.data) throw {code:"invalid_argument", message:"no document"};
+            var n = clone(r.data.data || {}); merge(n, clone(d));
+            return sb.from(name).update({data:n, guncel:now()}).eq("id", id).then(function(w){ if(w.error) throw E(w.error); return sign([n]); }).then(function(){ put(name, id, n); });
+          });
+        },
+        delete: function(){ return sb.from(name).delete().eq("id", id).then(function(r){ if(r.error) throw E(r.error); if(cache[name]) delete cache[name][id]; emit(name); }); }
+      };
+    },
+    onSnapshot: function(next, err){ (subs[name] = subs[name] || []).push(next); load(name).catch(function(e){ if(err) err(e); }); return function(){}; }
+  };
+}
+var timer = null;
+function refresh(){ clearTimeout(timer); timer = setTimeout(function(){ Object.keys(subs).forEach(function(n){ load(n).catch(function(){}); }); }, 400); }
+
+var A = {
+  db: { collection: coll },
+  user: {
+    id: function(){ return Promise.resolve(me ? me.id : null); },
+    can: function(){ return Promise.resolve(true); },
+    profiles: function(ids){ var o = {}; (ids || []).forEach(function(i){ o[i] = {name: names[i] || ""}; }); return Promise.resolve(o); }
+  },
+  assets: {
+    upload: function(blob){
+      var path = rid() + ".jpg";
+      return sb.storage.from("foto").upload(path, blob, {contentType:"image/jpeg"}).then(function(r){
+        if(r.error) throw {code:"upstream_error", message:r.error.message};
+        return sign([{foto:[{id:path}]}]).then(function(){ return {id:path, url:window.PANO_URL[path] || "", sizeBytes:blob.size, contentType:"image/jpeg"}; });
+      });
+    }
+  }
+};
+
+function loadNames(){ return sb.from("uyeler").select("id,ad").then(function(r){ names = {}; (r.data || []).forEach(function(x){ names[x.id] = x.ad; }); }); }
+function enter(){
+  var list = Object.keys(names).map(function(k){ return names[k]; }).sort();
+  if(list.length){ var h = $("cift"); h.textContent = ""; list.forEach(function(n, i){ if(i){ var b = document.createElement("b"); b.textContent = " & "; h.appendChild(b); } h.appendChild(document.createTextNode(n)); }); }
+  show(null);
+  try{ sb.channel("pano").on("postgres_changes", {event:"*", schema:"public"}, refresh).subscribe(); }catch(e){}
+  document.addEventListener("visibilitychange", function(){ if(!document.hidden) refresh(); });
+  resolveReady(A);
+}
+function boot(session){
+  me = session.user; gateMsg("Açılıyor…"); show("none");
+  sb.rpc("pano_uye").then(function(r){
+    if(r.error){ show("denied"); gateMsg("Veritabanı henüz kurulmamış görünüyor. Kurulum adımlarındaki SQL'i çalıştırıp sayfayı yenile."); return; }
+    if(r.data !== true){ show("denied"); gateMsg("Bu e-posta panoya ekli değil. Panonun sahibinden seni eklemesini iste."); return; }
+    return loadNames().then(function(){
+      if(names[me.id]){ gateMsg(""); enter(); return; }
+      gateMsg(""); show("name"); $("g-ad").focus();
+    });
+  }).catch(function(){ show("denied"); gateMsg("Bağlanılamadı. Bağlantını kontrol edip sayfayı yenile."); });
+}
+$("loginform").addEventListener("submit", function(e){
+  e.preventDefault(); var b = $("g-giris"); b.disabled = true; gateMsg("");
+  sb.auth.signInWithPassword({email: $("g-eposta").value.trim(), password: $("g-sifre").value}).then(function(r){
+    b.disabled = false;
+    if(r.error || !r.data.session){ gateMsg("E-posta ya da şifre hatalı."); return; }
+    $("g-sifre").value = ""; boot(r.data.session);
+  }).catch(function(){ b.disabled = false; gateMsg("Bağlanılamadı. Bağlantını kontrol edip tekrar dene."); });
+});
+$("nameform").addEventListener("submit", function(e){
+  e.preventDefault(); var ad = $("g-ad").value.trim(); if(!ad) return;
+  sb.from("uyeler").upsert({id: me.id, ad: ad}).then(function(r){
+    if(r.error){ gateMsg("Ad kaydedilemedi. Tekrar dene."); return; }
+    names[me.id] = ad; gateMsg(""); enter();
+  });
+});
+function out(){ sb.auth.signOut().then(function(){ location.reload(); }, function(){ location.reload(); }); }
+$("cikis").addEventListener("click", out); $("gateout").addEventListener("click", out);
+
+/* one-time import of a backup file made from the earlier Claude-hosted board */
+function b64blob(s){ var bin = atob(s), a = new Uint8Array(bin.length); for(var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return new Blob([a], {type:"image/jpeg"}); }
+$("ice").addEventListener("click", function(){ $("icefile").click(); });
+$("icefile").addEventListener("change", function(){
+  var file = this.files && this.files[0]; this.value = ""; if(!file) return;
+  var st = $("status"); function say(t){ st.hidden = !t; st.textContent = t || ""; }
+  file.text().then(function(txt){
+    var j = JSON.parse(txt), have = cache.kayitlar || {}, map = {}, done = 0, added = 0, recs = j.kayitlar || [], chain = Promise.resolve();
+    recs.forEach(function(rec){
+      chain = chain.then(function(){
+        done++; if(have[rec.id]) return;
+        say("İçe aktarılıyor: " + done + " / " + recs.length);
+        var d = clone(rec.data), fc = Promise.resolve();
+        (d.foto || []).forEach(function(f, i){
+          if(!(f && f.src && j.foto && j.foto[f.src])) return;
+          fc = fc.then(function(){
+            if(map[f.src]){ d.foto[i] = {id: map[f.src]}; return; }
+            var path = rid() + ".jpg";
+            return sb.storage.from("foto").upload(path, b64blob(j.foto[f.src]), {contentType:"image/jpeg"}).then(function(r){ if(r.error) throw r.error; map[f.src] = path; d.foto[i] = {id: path}; });
+          });
+        });
+        return fc.then(function(){ return sb.from("kayitlar").upsert({id: rec.id, data: d, guncel: now()}); }).then(function(r){ if(r.error) throw r.error; added++; });
+      });
+    });
+    (j.sorular || []).forEach(function(rec){ chain = chain.then(function(){ return sb.from("sorular").upsert({id: rec.id, data: rec.data, guncel: now()}); }); });
+    return chain.then(function(){ say(added + " kayıt içe aktarıldı."); refresh(); setTimeout(function(){ say(""); }, 6000); });
+  }).catch(function(e){ say("İçe aktarma yarıda kaldı: " + (e && e.message || "bilinmeyen hata") + ". Aynı dosyayı tekrar seçersen kaldığı yerden devam eder."); refresh(); });
+});
+
+sb.auth.getSession().then(function(r){ if(r.data && r.data.session) boot(r.data.session); else { show("login"); } }).catch(function(){ show("login"); });
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var $ = function(id){ return document.getElementById(id); };
+function el(tag, cls, text){ var n = document.createElement(tag); if(cls) n.className = cls; if(text != null) n.textContent = text; return n; }
+var SVGNS = "http://www.w3.org/2000/svg";
+function sv(tag, attrs){ var n = document.createElementNS(SVGNS, tag); for(var k in attrs) n.setAttribute(k, attrs[k]); return n; }
+
+var COL = "kayitlar", QCOL = "sorular";
+var S = { db:null, user:null, assets:null, uid:null, canWrite:null, docs:[], qs:{}, names:{}, loaded:false, drafts:{}, focusId:null, confirmDel:null, busy:{}, mapView:"tr", pin:null };
+
+var TABS = [["akis","Anı defteri"],["fotograflar","Fotoğraflar"],["yapilacaklar","Yapılacaklar"],["ozel-gunler","Özel günler"],["harita","Harita"],["yerler","Yerler"],["filmler","Filmler"],["diziler","Diziler"],["kitaplar","Kitaplar"],["muzik","Müzik"],["lezzetler","Lezzetler"],["sozler","Sözler"],["soru","Günün sorusu"],["x","X"]];
+var TABTIP = { yapilacaklar:"yapilacak", "ozel-gunler":"gun", harita:"yer", yerler:"yer", filmler:"film", diziler:"dizi", kitaplar:"kitap", muzik:"muzik", lezzetler:"lezzet", sozler:"soz" };
+var T = {
+  ani:      { ad:"Anı", c:"", l:"Ne yaptık?", yerL:"Yer", pin:1, tab:"akis" },
+  yapilacak:{ ad:"Yapılacak", c:"c-line", l:"Ne yapmak istiyoruz?", yerL:"Yer", noDate:1, done:"Yaptık", wl:"Yapılacak", tab:"yapilacaklar" },
+  gun:      { ad:"Özel gün", c:"c-line", l:"Günün adı", noFoto:1, tab:"ozel-gunler" },
+  yer:      { ad:"Yer", c:"c-leaf", l:"Yerin adı", yerL:"Şehir ya da bölge", pin:1, wish:"Henüz gitmedik, listeye ekle", wl:"Gidilecek", done:"Gittik", tab:"yerler",
+              h1:"Gittiğimiz yerler", h2:"Gitmek istediklerimiz", e1:"Henüz yer eklenmedi. Gittiğiniz bir yeri fotoğrafıyla ekleyin.", e2:"Liste boş. Gitmek istediğiniz yeri “Henüz gitmedik” seçeneğiyle ekleyin." },
+  film:     { ad:"Film", c:"c-cap", l:"Filmin adı", notL:"Ne düşündük?", stars:1, wish:"Henüz izlemedik, listeye ekle", wl:"İzlenecek", done:"İzledik", tab:"filmler",
+              h1:"İzlediklerimiz", h2:"İzleyeceklerimiz", e1:"Henüz film eklenmedi. İzlediğiniz bir filmi ekleyin, ikiniz de puan verip yorum yazabilirsiniz.", e2:"Liste boş. Aklınıza gelen filmi “Henüz izlemedik” seçeneğiyle ekleyin." },
+  dizi:     { ad:"Dizi", c:"c-cap", l:"Dizinin adı", yerL:"Kaçıncı sezon, kaçıncı bölümdeyiz?", notL:"Ne düşündük?", stars:1, wish:"Henüz başlamadık, listeye ekle", wl:"İzlenecek", done:"Başladık", tab:"diziler",
+              h1:"İzlediğimiz diziler", h2:"İzleyeceklerimiz", e1:"Henüz dizi eklenmedi. İzlediğiniz diziyi ekleyin; hangi bölümde kaldığınızı da yazabilirsiniz.", e2:"Liste boş. Başlamak istediğiniz diziyi “Henüz başlamadık” seçeneğiyle ekleyin." },
+  kitap:    { ad:"Kitap", c:"c-cap", l:"Kitabın adı", yerL:"Yazar", notL:"Ne düşündük?", stars:1, wish:"Henüz okumadık, listeye ekle", wl:"Okunacak", done:"Okuduk", tab:"kitaplar",
+              h1:"Okuduklarımız", h2:"Okuyacaklarımız", e1:"Henüz kitap eklenmedi. Okuduğunuz ya da birbirinize önerdiğiniz bir kitabı ekleyin.", e2:"Liste boş. Okumak istediğiniz kitabı “Henüz okumadık” seçeneğiyle ekleyin." },
+  muzik:    { ad:"Şarkı", c:"c-cap", l:"Şarkının adı", yerL:"Kim söylüyor?", notL:"Bize neyi hatırlatıyor?", stars:1, noFoto:1, tab:"muzik",
+              h1:"Bizim şarkılarımız", e1:"Henüz şarkı eklenmedi. Size bir anı hatırlatan ilk şarkıyı ekleyin." },
+  lezzet:   { ad:"Lezzet", c:"c-leaf", l:"Mekânın ya da yemeğin adı", yerL:"Nerede?", notL:"Ne yedik, nasıldı?", pin:1, stars:1, wish:"Henüz denemedik, listeye ekle", wl:"Denenecek", done:"Denedik", tab:"lezzetler",
+              h1:"Denediklerimiz", h2:"Denemek istediklerimiz", e1:"Henüz lezzet eklenmedi. Gittiğiniz bir mekânı ya da evde yaptığınız bir yemeği ekleyin.", e2:"Liste boş. Denemek istediğiniz yeri “Henüz denemedik” seçeneğiyle ekleyin." },
+  soz:      { ad:"Söz", c:"c-line", l:"Ne dedi?", yerL:"Kim söyledi?", notL:"Nerede, nasıl oldu?", noFoto:1, tab:"sozler",
+              h1:"Sözler ve iç şakalar", e1:"Henüz söz eklenmedi. Birinizin söylediği unutulmaz bir cümleyi ya da aranızdaki bir şakayı yazın." }
+};
+var SORULAR = ["İlk buluşmamızda aklından ne geçmişti?", "Bende ilk fark ettiğin şey neydi?", "Birlikte geçirdiğimiz en güzel gün hangisiydi?", "Beni en çok ne zaman özlüyorsun?", "Birlikte gitmeyi en çok istediğin yer neresi?", "Seni en çok güldürdüğüm an hangisiydi?", "Benim hangi alışkanlığım sana en sevimli geliyor?", "Birlikte öğrenmek istediğin bir şey var mı?", "En sevdiğin fotoğrafımız hangisi, neden?", "Bana söylemek isteyip de söylemediğin güzel bir şey var mı?", "Bir pazar gününü birlikte nasıl geçirmek istersin?", "Bizi en iyi anlatan şarkı hangisi?", "Bende en çok güvendiğin özellik ne?", "Birlikte yediğimiz en güzel yemek hangisiydi?", "Beş yıl sonra bizi nerede hayal ediyorsun?", "Sana kendimi en yakın hissettirdiğim an hangisiydi?", "Birlikte tekrar yaşamak istediğin bir gün var mı?", "Benden öğrendiğin bir şey var mı?", "Birlikte izlediğimiz filmlerden hangisini unutamıyorsun?", "Seni en çok şaşırttığım an hangisiydi?", "Zor bir günde sana nasıl destek olmamı istersin?", "Aramızdaki en komik iç şaka sence hangisi?", "Birlikte yapmayı en çok sevdiğin sıradan şey ne?", "Bugün seni mutlu eden küçük bir şey neydi?", "Benimle ilgili en sevdiğin anı hangisi?", "Birlikte denemek istediğin yeni bir şey ne?", "Sence birbirimize en çok hangi konuda benziyoruz?", "Sence en çok hangi konuda farklıyız?", "Bana bir lakap takacak olsan ne olurdu?", "Birlikte çıktığımız yolculuklardan en sevdiğin hangisi?", "Evimizde mutlaka olmasını istediğin şey ne?", "Sana kendini özel hissettiren bir davranışım hangisi?", "Birlikte yaşlandığımızı hayal edince aklına ne geliyor?", "Bu hafta birlikte ne yapalım?", "Bana ilk mesajını hatırlıyor musun, ne yazmıştın?", "Seni en iyi anladığımı hissettiğin an hangisiydi?", "Birlikte kutlamayı en çok sevdiğin gün hangisi?", "Bugün bana teşekkür etmek istediğin bir şey var mı?", "Bizim için bir gelenek başlatacak olsan ne olurdu?", "Beni üç kelimeyle anlat."];
+
+/* ---------- helpers ---------- */
+function ymd(d){ return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+function today(){ return ymd(new Date()); }
+function parse(s){ var p = String(s || "").split("-"); return new Date(+p[0], +p[1]-1, +p[2]); }
+function niceDate(s, long){ var d = parse(s); if(isNaN(d)) return s; return d.toLocaleDateString("tr-TR", long ? {day:"numeric", month:"long", year:"numeric"} : {day:"numeric", month:"short", year:"numeric"}); }
+function weekday(s){ var d = parse(s); return isNaN(d) ? "" : d.toLocaleDateString("tr-TR", {weekday:"long"}); }
+function niceTime(ts){ var d = new Date(ts); return isNaN(d) ? "" : d.toLocaleDateString("tr-TR", {day:"numeric", month:"short"}) + " " + d.toLocaleTimeString("tr-TR", {hour:"2-digit", minute:"2-digit"}); }
+function dayNo(d){ return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); }
+function photoSrc(f){ return f && f.src ? f.src : f && f.id ? (window.PANO_URL[f.id] || "") : ""; }
+function nameOf(id){ if(!id) return ""; if(id === S.uid && !S.names[id]) return "Sen"; return S.names[id] || "Biri"; }
+function errText(e){
+  var c = e && e.code;
+  if(c === "quota_exceeded" || c === "quota_or_state") return "Yer kalmadı. Eski kayıtlardan ya da fotoğraflardan silmek gerekiyor.";
+  if(c === "too_large") return "Fotoğraf çok büyük. Daha küçük bir fotoğraf dene.";
+  if(c === "unsupported_type") return "Bu dosya türü yüklenemiyor. JPEG ya da PNG dene.";
+  if(c === "invalid_argument" || c === "not_granted") return "Kaydedilemedi. Bu panoya yazma iznin yok gibi görünüyor.";
+  if(c === "revoked") return "Panoya erişimin değişmiş. Sayfayı yeniden aç.";
+  return "Kaydedilemedi. Bağlantını kontrol edip tekrar dene.";
+}
+function setStatus(t){ var s = $("status"); s.hidden = !t; s.textContent = t || ""; }
+function flash(t){ S.flashUntil = Date.now() + 6000; setStatus(t); setTimeout(function(){ if(S.loaded && Date.now() >= S.flashUntil) setStatus(""); }, 6100); }
+function nextOf(s){ /* next yearly occurrence of a date */
+  var d = parse(s), now = new Date(), t = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var n = new Date(t.getFullYear(), d.getMonth(), d.getDate()); if(n < t) n = new Date(t.getFullYear() + 1, d.getMonth(), d.getDate());
+  return { days: dayNo(n) - dayNo(t), years: n.getFullYear() - d.getFullYear() };
+}
+
+/* ---------- data ---------- */
+function resolveNames(){
+  if(!S.user || !S.user.profiles) return;
+  var ids = {};
+  S.docs.forEach(function(d){
+    if(d.ekleyen) ids[d.ekleyen] = 1;
+    (d.yorumlar || []).forEach(function(c){ if(c.k) ids[c.k] = 1; });
+    Object.keys(d.yildiz || {}).forEach(function(k){ ids[k] = 1; });
+  });
+  Object.keys(S.qs).forEach(function(q){ Object.keys(S.qs[q].c || {}).forEach(function(k){ ids[k] = 1; }); });
+  if(S.uid) ids[S.uid] = 1;
+  var list = Object.keys(ids); if(!list.length) return;
+  Promise.resolve(S.user.profiles(list)).then(function(ps){
+    var changed = false;
+    list.forEach(function(id){ var n = ps && ps[id] && ps[id].name || ""; if(n){ n = n.split(" ")[0]; if(S.names[id] !== n){ S.names[id] = n; changed = true; } } });
+    if(changed) render();
+  }).catch(function(){});
+}
+
+function start(){
+  var C = window.claude;
+  if(!C || typeof C.use !== "function"){ setStatus("Pano şu anda verilerine ulaşamıyor. Sayfayı Claude üzerinden yeniden aç."); return; }
+  var timer = setTimeout(function(){ if(!S.loaded) setStatus("Kayıtlar henüz gelmedi. Bağlantını kontrol et; pano kendiliğinden denemeye devam ediyor."); }, 10000);
+  Promise.all([C.use("db"), C.use("user"), C.use("assets")]).then(function(r){
+    S.db = r[0]; S.user = r[1]; S.assets = r[2];
+    if(!S.db){ clearTimeout(timer); setStatus("Panoyu görmek için Claude hesabınla giriş yapman ve davet edilmiş olman gerekiyor."); return; }
+    var pre = [];
+    if(S.user){
+      pre.push(Promise.resolve(S.user.id && S.user.id()).then(function(id){ S.uid = id || null; }).catch(function(){}));
+      pre.push(Promise.resolve(S.user.can && S.user.can("data.write")).then(function(v){ S.canWrite = v === undefined ? null : v; }).catch(function(){}));
+    }
+    Promise.all(pre).then(function(){
+      S.db.collection(COL).onSnapshot(function(snap){
+        S.docs = snap.docs.map(function(d){ var o = Object.assign({}, d.data() || {}); o._id = d.id; return o; });
+        if(!snap.metadata || !snap.metadata.fromCache || snap.docs.length){ S.loaded = true; }
+        if(snap.metadata && !snap.metadata.fromCache){ clearTimeout(timer); }
+        if(!(S.flashUntil > Date.now())) setStatus(S.loaded ? "" : "Pano açılıyor…");
+        resolveNames(); render();
+      }, function(e){
+        clearTimeout(timer);
+        setStatus(e && e.code === "revoked" ? "Panoya erişimin değişmiş. Sayfayı yeniden aç." : "Kayıtlar yüklenemedi. Sayfayı yeniden açmayı dene.");
+      });
+      S.db.collection(QCOL).onSnapshot(function(snap){
+        var m = {}; snap.docs.forEach(function(d){ m[d.id] = d.data() || {}; }); S.qs = m; resolveNames(); if(route() === "soru") render();
+      }, function(){});
+    });
+  });
+}
+
+function ref(id){ return S.db.collection(COL).doc(id); }
+function write(id, fn){
+  if(S.busy[id]) return Promise.resolve();
+  S.busy[id] = true;
+  return Promise.resolve().then(fn).catch(function(e){
+    if(e && e.code === "invalid_argument"){ S.canWrite = false; }
+    flash(errText(e));
+  }).then(function(){ S.busy[id] = false; render(); });
+}
+
+/* ---------- map ---------- */
+var K = 0.777, WORLD = "M-46.3 80.0L-46.5 80.5L-46.7 81.0L-48.4 80.9L-50.1 80.9L-51.1 80.6L-51.1 80.5L-51.5 80.3L-49.8 80.3L-48.1 80.4L-47.5 80.0L-47.1 79.6L-46.3 80.0ZM-123.7 79.5L-125.2 79.6L-126.2 79.3L-126.7 78.9L-127.2 78.6L-126.7 78.2L-125.3 78.4L-124.5 78.7L-123.9 79.0L-123.7 79.5ZM-35.1 78.0L-34.1 78.5L-33.8 79.1L-33.7 79.5L-33.7 80.0L-34.9 80.3L-36.1 80.6L-37.6 80.8L-39.2 81.0L-41.1 81.0L-42.1 80.6L-41.9 80.2L-40.3 79.9L-39.6 79.6L-39.1 79.2L-38.8 78.8L-38.3 78.5L-37.8 78.0L-37.4 78.0L-36.3 77.8L-35.1 78.0ZM-94.2 73.5L-93.2 73.7L-92.2 73.5L-92.7 73.8L-93.4 74.1L-94.5 74.0L-95.3 73.7L-95.1 73.3L-94.2 73.5ZM-97.6 73.5L-96.4 73.9L-96.8 73.8L-97.8 73.7L-98.9 73.5L-98.3 73.2L-97.6 73.5ZM-76.9 71.9L-76.1 72.1L-75.2 72.0L-74.7 72.5L-75.4 72.4L-76.3 72.5L-77.3 72.4L-78.3 72.5L-79.1 72.3L-79.5 71.9L-79.0 71.7L-78.0 71.9L-76.9 71.9ZM-53.2 71.0L-53.1 71.4L-53.2 71.8L-53.4 72.2L-54.4 72.3L-55.2 72.5L-56.2 72.5L-55.9 72.1L-56.8 72.2L-57.6 72.4L-58.2 72.1L-58.3 71.7L-57.4 71.3L-56.9 71.2L-56.0 71.2L-55.8 70.7L-55.7 70.3L-55.7 69.5L-55.3 69.0L-54.6 68.9L-54.2 69.3L-54.0 69.6L-53.7 70.1L-53.4 70.5L-53.2 71.0ZM-139.9 84.7L-139.8 84.7L-139.1 84.1L-137.7 84.5L-137.6 84.4L-137.4 84.3L-137.2 84.2L-136.9 84.1L-136.8 84.1L-136.7 84.1L-136.6 84.1L-135.5 84.5L-134.5 84.1L-134.3 84.1L-132.1 83.9L-131.3 84.1L-130.9 84.2L-129.8 84.6L-127.6 84.8L-125.8 85.1L-122.8 85.4L-120.6 85.1L-117.3 85.3L-115.4 85.6L-113.4 85.3L-111.2 85.0L-111.0 84.6L-114.1 84.5L-116.6 84.3L-117.3 83.9L-119.3 83.7L-119.2 83.2L-118.9 82.8L-118.6 82.5L-118.8 82.0L-120.1 81.8L-120.7 81.4L-121.9 81.1L-120.0 81.2L-118.2 81.0L-117.1 81.3L-115.7 81.0L-114.4 80.7L-113.8 80.3L-114.0 79.9L-115.0 79.7L-116.2 79.4L-117.8 79.3L-119.2 79.2L-120.7 79.1L-121.2 78.7L-122.2 78.4L-122.8 78.0L-123.0 76.9L-122.7 77.0L-122.0 77.3L-120.7 77.2L-119.5 77.1L-118.8 77.5L-117.6 77.4L-116.6 77.2L-115.6 76.9L-114.7 76.6L-113.5 76.5L-113.6 76.1L-113.8 75.7L-113.6 75.4L-112.6 75.2L-112.1 75.5L-111.0 75.3L-110.1 75.1L-108.9 75.1L-107.9 75.0L-106.8 74.7L-106.0 74.5L-105.1 74.3L-104.5 74.4L-103.9 74.4L-102.8 74.3L-101.7 74.5L-100.7 74.5L-99.6 74.3L-98.6 74.4L-97.4 74.5L-96.4 74.5L-95.2 74.5L-94.1 74.5L-93.0 74.5L-92.2 74.2L-91.3 74.0L-90.3 74.2L-89.4 74.1L-88.5 73.7L-88.0 74.0L-87.8 74.4L-87.3 74.7L-86.4 74.4L-85.5 74.8L-84.5 74.9L-83.6 75.2L-82.5 75.1L-81.5 74.9L-80.3 75.0L-79.3 75.1L-78.2 75.3L-77.8 74.9L-78.3 74.5L-78.7 74.2L-79.7 74.1L-80.1 73.7L-80.3 73.4L-80.6 72.6L-80.0 72.8L-78.9 72.8L-77.9 72.8L-77.0 72.9L-76.2 73.2L-75.9 73.6L-74.9 73.6L-73.8 73.5L-72.8 73.3L-71.8 73.2L-71.0 73.4L-70.0 73.3L-69.3 72.6L-68.7 73.0L-67.8 73.2L-66.8 73.1L-66.2 73.5L-65.2 73.5L-64.2 73.6L-63.3 73.9L-62.7 73.5L-62.4 73.1L-61.6 73.5L-60.5 73.4L-59.8 73.6L-59.2 74.0L-58.2 73.9L-57.4 73.7L-56.6 73.4L-55.6 73.3L-54.6 73.1L-53.6 73.0L-52.8 72.8L-52.3 72.5L-52.2 72.0L-52.3 71.6L-52.5 71.2L-52.8 70.9L-53.0 70.5L-53.2 70.1L-53.3 69.7L-53.2 69.3L-52.8 69.0L-52.5 68.5L-52.4 68.2L-52.5 67.7L-52.6 67.3L-52.3 66.9L-51.8 66.6L-51.3 66.2L-50.8 65.9L-50.2 65.6L-49.9 65.2L-49.4 64.9L-49.0 64.6L-48.2 64.6L-47.7 64.3L-47.2 64.1L-46.5 64.0L-46.0 63.7L-45.5 63.4L-44.9 63.3L-44.5 63.5L-44.8 63.9L-45.5 64.2L-45.9 64.4L-46.5 64.2L-47.1 64.3L-47.6 64.5L-48.2 64.8L-48.6 65.1L-48.7 65.5L-48.6 65.9L-48.3 66.2L-48.8 66.4L-49.5 66.5L-50.0 66.8L-50.4 67.1L-50.9 67.6L-51.0 68.0L-50.7 68.4L-50.3 68.7L-49.7 68.9L-49.1 69.2L-48.8 69.6L-48.6 70.0L-48.4 70.4L-48.0 70.7L-47.8 71.1L-47.7 72.0L-47.5 72.4L-47.4 72.8L-47.2 73.2L-47.3 73.7L-47.7 74.1L-48.1 74.4L-49.2 74.6L-49.5 74.9L-50.0 75.3L-51.2 75.6L-52.2 75.8L-53.2 76.0L-54.2 76.2L-54.9 76.6L-56.1 76.7L-57.5 76.6L-58.7 76.7L-60.0 76.7L-59.8 77.1L-58.6 77.3L-57.7 77.6L-57.2 77.9L-58.1 78.2L-59.4 78.1L-60.5 78.4L-60.6 78.8L-60.6 79.2L-59.7 79.5L-59.5 79.9L-58.6 80.3L-56.9 80.4L-55.5 80.7L-54.4 81.0L-53.0 81.3L-51.1 81.5L-49.1 81.7L-47.8 82.0L-46.4 82.4L-45.6 82.8L-45.2 83.2L-44.3 82.9L-43.0 82.6L-41.7 82.3L-40.0 82.0L-38.7 81.7L-36.7 81.7L-34.8 81.8L-33.3 82.1L-32.8 81.7L-31.7 81.4L-29.7 81.3L-28.2 81.1L-26.7 80.9L-25.1 80.8L-23.4 80.6L-22.2 80.3L-22.7 80.0L-23.1 79.6L-23.1 79.3L-24.6 79.3L-26.2 79.5L-27.7 79.5L-27.9 79.1L-27.8 78.3L-27.4 78.1L-26.3 77.9L-25.0 77.7L-24.1 77.4L-23.1 77.1L-22.4 76.7L-21.4 76.5L-20.3 76.4L-19.8 76.3L-18.6 76.2L-17.5 76.1L-16.5 75.9L-15.5 75.7L-14.7 75.4L-13.6 75.1L-12.9 74.8L-12.2 74.5L-12.0 74.1L-12.8 73.9L-12.5 73.5L-12.0 73.1L-11.2 73.0L-10.3 72.7L-9.6 72.4L-8.9 72.0L-8.6 71.5L-8.0 71.3L-7.1 71.3L-6.7 71.7L-5.8 71.7L-5.7 71.3L-5.3 70.9L-4.5 71.0L-4.3 71.4L-3.4 71.5L-2.4 71.3L-1.4 71.2L-0.5 71.2L-0.2 71.6L0.7 71.3L1.5 71.1L2.3 71.0L3.2 70.9L4.0 70.6L4.9 70.5L5.5 70.2L6.0 69.9L6.6 70.1L7.4 70.0L8.0 70.5L8.4 70.8L9.3 70.6L9.6 70.2L10.4 70.0L11.5 70.0L11.8 70.4L12.4 70.0L13.2 69.9L14.1 69.9L15.0 69.9L15.8 70.0L16.7 70.1L17.0 70.4L17.5 70.7L18.4 70.5L19.3 70.5L20.2 70.5L21.1 70.5L21.8 70.3L22.7 70.2L23.3 69.9L24.1 69.8L24.9 69.7L25.5 69.4L25.9 68.8L26.3 68.5L27.1 68.7L27.4 69.0L28.1 69.2L28.9 69.2L29.5 69.5L30.0 69.8L30.8 69.5L31.1 69.1L31.8 68.9L32.6 68.6L33.4 68.5L34.3 68.3L34.9 68.1L35.5 67.8L36.1 67.6L36.9 67.7L37.6 67.4L38.1 67.1L38.8 67.1L39.4 66.9L39.6 66.5L40.2 66.2L40.9 66.1L41.7 65.9L42.4 65.8L43.1 65.9L43.8 66.0L44.4 66.2L44.5 66.7L45.2 67.0L45.6 67.3L46.6 67.4L47.1 67.7L47.7 68.0L48.5 68.0L49.1 67.8L49.8 67.4L50.5 67.6L51.3 67.7L52.0 67.9L52.8 67.9L53.5 67.9L54.2 69.0L54.1 69.2L54.0 69.7L53.3 69.9L52.7 70.3L52.8 70.7L53.7 70.7L53.6 71.1L53.2 71.4L52.8 71.9L53.4 72.2L54.3 72.3L55.2 72.1L55.6 71.7L55.9 71.3L56.3 71.0L56.8 70.7L57.0 70.4L57.4 69.9L57.9 69.8L58.8 69.7L59.5 69.6L60.3 69.5L60.7 69.1L60.9 68.7L61.5 68.3L62.2 68.1L62.9 67.9L63.3 67.5L63.8 67.4L64.3 67.2L65.1 67.3L65.8 67.2L66.6 67.1L67.4 67.1L68.0 66.9L68.4 66.2L68.7 66.5L69.0 67.0L69.7 67.1L70.4 67.2L71.2 67.1L72.0 67.2L72.7 67.2L73.2 67.1L73.8 67.2L74.4 67.4L75.1 67.2L76.0 67.2L76.7 67.1L77.5 67.2L78.0 66.9L78.4 66.6L78.9 66.3L79.9 65.6L80.4 65.7L81.0 66.0L81.5 66.3L82.5 66.9L83.3 67.0L84.0 67.0L84.8 66.8L85.7 66.7L86.3 66.4L86.8 66.1L87.7 66.1L88.3 65.9L88.9 66.1L89.3 66.4L89.8 66.7L90.7 66.7L91.2 66.9L92.1 67.2L93.1 67.3L93.9 67.2L94.5 66.9L95.0 66.6L95.7 66.5L96.4 66.6L97.2 66.7L98.0 66.6L98.7 66.6L99.4 66.7L100.1 66.8L100.8 66.6L101.6 66.4L102.4 66.4L103.3 66.4L104.0 66.3L104.7 66.2L104.9 65.7L105.0 65.3L105.4 65.6L105.6 66.0L105.8 66.4L106.2 66.8L106.8 67.0L107.7 66.9L108.7 66.9L109.4 66.8L110.4 66.8L111.2 66.8L112.2 66.8L113.0 66.9L113.6 67.2L113.4 67.6L113.9 67.9L114.8 68.1L115.6 68.4L116.7 68.6L117.7 68.7L118.5 68.9L119.4 68.9L119.9 68.6L120.6 68.8L121.2 69.1L121.8 69.4L122.8 69.5L123.7 69.6L124.1 70.0L124.9 70.2L125.5 70.6L126.4 70.7L127.3 70.7L128.1 70.8L129.1 70.8L130.0 70.8L130.9 71.0L131.7 71.2L132.5 71.4L133.0 71.7L132.9 72.1L132.5 72.4L132.2 72.9L131.9 73.2L131.5 73.7L130.5 73.8L130.1 74.2L129.1 74.4L128.7 74.8L128.2 75.1L127.6 75.5L127.3 75.9L127.1 76.2L127.0 76.7L127.0 77.1L127.5 77.5L127.6 77.8L128.0 78.2L129.5 78.3L129.8 78.8L128.4 78.9L127.2 79.1L125.7 79.2L125.0 79.7L124.9 80.2L124.6 80.6L124.2 80.9L125.2 81.3L125.6 81.7L126.3 82.1L127.2 82.4L128.3 82.7L129.5 83.0L131.2 83.3L131.6 83.8L133.9 84.0L134.0 84.1L134.6 84.4L136.7 84.2L138.5 84.5L-139.9 84.7ZM-52.6 53.8L-51.6 54.5L-50.5 54.7L-50.9 55.2L-51.6 55.2L-52.0 54.9L-52.3 55.3L-53.0 55.6L-53.8 55.5L-54.4 55.2L-55.2 55.1L-56.2 54.5L-56.9 54.0L-58.0 52.8L-57.4 53.0L-56.3 53.7L-55.2 54.1L-54.8 53.6L-54.6 52.9L-53.9 52.5L-53.3 52.6L-53.0 53.1L-52.6 53.8ZM-45.5 51.1L-44.9 51.5L-45.1 51.9L-46.2 52.2L-46.5 51.8L-47.2 52.3L-47.6 51.8L-46.6 51.3L-46.0 51.5L-45.5 51.1ZM54.6 49.7L53.4 49.8L53.4 49.2L53.5 48.8L53.6 48.6L54.1 48.9L54.8 49.1L54.8 49.3L54.6 49.7ZM113.0 40.8L113.7 41.1L114.1 41.0L114.8 40.8L115.2 40.9L115.3 42.1L115.0 42.4L114.9 43.2L114.7 42.9L114.1 43.6L114.0 43.6L113.5 43.5L113.0 42.7L112.9 42.0L112.4 41.2L112.5 40.7L113.0 40.8ZM134.4 40.9L134.6 41.3L135.2 40.9L135.4 41.3L135.4 41.8L135.1 42.2L134.6 43.0L134.2 43.4L134.5 43.9L133.9 43.9L133.2 44.2L133.0 44.9L132.6 45.9L132.0 46.4L131.6 46.6L130.9 46.6L130.4 46.3L129.5 46.2L129.4 45.9L129.8 45.1L130.8 44.1L131.3 43.9L131.8 43.6L132.5 43.0L133.0 42.5L133.3 41.8L133.6 41.5L133.7 41.0L134.3 40.5L134.4 40.9ZM135.7 36.2L136.2 37.2L136.3 36.5L136.6 36.8L136.7 37.6L137.3 37.9L137.9 38.0L138.3 37.6L138.7 37.7L138.5 38.6L138.3 39.2L137.7 39.1L137.5 39.4L137.6 39.9L137.4 40.1L137.1 40.6L136.8 41.3L136.2 41.7L136.0 41.4L135.7 41.3L136.2 40.5L135.9 39.9L135.1 39.5L135.1 39.1L135.6 38.8L135.8 38.0L135.7 37.4L135.4 36.7L135.4 36.5L135.1 36.1L134.5 35.2L134.1 34.5L134.4 34.5L134.9 35.0L135.5 35.3L135.7 36.2ZM129.9 22.2L129.6 22.4L129.1 22.1L128.6 21.7L128.1 21.1L127.6 20.4L127.5 20.1L127.8 20.1L128.2 20.5L128.6 20.8L128.8 21.1L129.4 21.7L129.9 22.2ZM138.6 17.3L138.9 17.6L138.7 18.2L138.3 18.3L137.8 18.2L137.8 17.7L138.1 17.4L138.4 17.5L138.6 17.3ZM-139.9 16.6L139.4 16.8L138.9 17.0L138.8 16.6L139.2 16.4L139.4 16.4L-139.9 16.1L-139.7 16.0L-139.8 16.5L-139.9 16.6ZM130.4 16.5L130.2 16.6L129.9 16.2L129.9 15.9L130.4 16.5ZM129.8 14.9L130.0 15.7L129.8 15.6L129.6 15.7L129.5 15.4L129.5 14.6L129.8 14.9ZM38.9 13.6L39.0 14.8L39.2 15.2L39.1 15.7L39.0 16.0L38.7 15.4L38.6 15.7L38.7 16.5L38.7 16.9L38.5 17.1L38.4 18.0L38.1 19.1L37.7 20.5L37.2 22.4L36.9 23.8L36.6 24.9L36.0 25.2L35.3 25.6L34.8 25.3L34.2 25.0L34.0 24.5L34.0 23.6L33.7 22.8L33.6 22.1L33.7 21.3L34.1 21.2L34.1 20.8L34.5 20.1L34.5 19.4L34.4 19.0L34.2 18.3L34.2 17.4L34.4 16.9L34.5 16.2L34.9 16.2L35.4 16.0L35.6 15.8L36.0 15.8L36.4 15.2L37.1 14.6L37.3 14.1L37.2 13.7L37.5 13.8L38.0 13.1L38.0 12.5L38.2 12.0L38.5 12.5L38.7 12.9L38.9 13.6ZM111.5 13.8L111.8 14.5L112.3 14.2L112.6 14.6L113.0 15.0L112.9 15.4L113.0 16.3L113.2 16.8L113.4 16.9L113.6 17.8L113.5 18.3L113.7 19.0L114.6 19.5L115.1 20.0L115.7 20.4L115.6 20.6L116.0 21.3L116.3 22.3L116.6 22.1L116.9 22.6L117.1 22.4L117.3 23.5L117.8 24.1L118.2 24.5L118.8 25.3L119.0 26.1L119.0 26.6L119.0 27.3L119.3 28.1L119.3 29.0L119.1 29.5L118.9 30.4L119.0 30.9L118.8 31.6L118.5 32.6L117.9 33.0L117.6 33.8L117.3 34.3L117.1 35.2L116.8 35.7L116.6 36.4L116.5 37.1L116.5 37.4L116.1 37.8L115.2 37.8L114.5 38.2L114.2 38.6L113.7 39.0L113.0 38.6L112.6 38.4L112.7 37.9L112.3 38.1L111.6 38.8L110.9 38.5L110.5 38.4L110.0 38.3L109.3 38.0L108.8 37.4L108.6 36.6L108.4 36.1L108.1 35.7L107.3 35.6L107.6 35.1L107.4 34.4L107.0 35.1L106.3 35.3L106.7 34.7L106.8 34.1L107.1 33.6L107.1 32.9L106.4 33.8L106.0 34.1L105.7 34.9L105.1 34.5L105.1 33.9L104.6 33.2L104.2 32.8L104.3 32.6L103.3 32.0L102.8 32.0L102.0 31.5L100.6 31.6L99.6 31.9L98.8 32.3L98.0 32.2L97.2 32.7L96.5 33.0L96.4 33.5L96.1 33.9L95.4 33.9L94.9 34.0L94.2 33.8L93.7 33.9L93.2 34.0L92.7 34.5L92.5 34.5L92.1 34.7L91.7 35.1L91.1 35.0L90.6 35.0L89.8 34.4L89.4 34.2L89.4 33.6L89.8 33.5L89.9 33.3L89.9 32.9L90.0 32.2L89.9 31.6L89.5 30.6L89.4 30.0L89.4 29.5L89.1 28.8L89.1 28.5L88.7 28.1L88.6 27.3L88.2 26.5L88.1 26.1L88.4 26.5L88.1 25.6L88.5 25.9L88.8 26.3L88.7 25.8L88.4 25.0L88.3 24.7L88.1 24.4L88.2 23.8L88.3 23.6L88.5 23.1L88.4 22.5L88.7 21.8L88.8 22.5L89.1 21.8L89.7 21.5L90.1 21.1L90.7 20.7L91.0 20.6L91.3 20.7L91.9 20.4L92.3 20.3L92.5 20.0L92.7 20.0L93.1 20.0L93.9 19.7L94.3 19.2L94.5 18.7L95.0 18.2L95.0 17.8L95.0 17.3L95.6 16.4L95.9 17.3L96.2 17.1L96.0 16.6L96.2 16.1L96.5 16.3L96.6 15.6L97.1 15.1L97.3 14.7L97.6 14.5L97.7 14.2L98.0 14.3L98.0 14.1L98.4 14.0L98.7 13.8L99.3 14.3L99.7 14.9L100.2 14.9L100.7 15.0L100.6 14.4L100.9 13.6L101.3 13.4L101.2 13.1L101.5 12.5L102.0 12.2L102.4 12.3L103.0 12.1L103.0 11.6L102.4 11.3L102.8 11.1L103.4 11.4L103.8 11.8L104.4 12.0L104.6 11.9L105.1 12.2L105.6 12.0L105.9 12.0L106.1 11.9L106.4 12.4L106.2 12.9L105.9 13.3L105.6 13.3L105.7 13.7L105.5 14.2L105.2 14.7L105.3 15.0L105.9 15.6L106.5 15.9L106.9 16.2L107.5 16.8L107.7 16.8L108.1 17.1L108.2 17.4L108.9 17.7L109.5 17.4L109.6 16.8L109.8 16.4L109.9 15.8L110.1 15.0L110.0 14.6L110.0 14.3L110.0 13.7L110.1 12.9L110.2 12.7L110.1 12.4L110.3 11.9L110.4 11.3L110.4 11.0L110.7 10.7L111.0 11.2L111.0 11.8L111.2 11.9L111.2 12.3L111.5 12.8L111.6 13.4L111.5 13.8ZM126.0 10.5L126.2 10.8L125.6 10.8L125.3 10.2L125.8 10.4L126.0 10.5ZM93.8 10.2L93.5 10.3L92.4 9.6L93.2 9.4L93.6 9.7L93.8 10.0L93.8 10.2ZM125.0 9.9L124.7 9.9L124.2 9.8L124.0 9.6L124.1 9.2L124.6 9.4L124.9 9.6L125.0 9.9ZM125.6 9.6L125.5 9.8L124.9 8.9L124.8 8.3L125.0 8.3L125.3 9.1L125.6 9.6ZM96.7 10.1L96.0 10.4L95.9 10.2L96.0 9.9L96.3 9.3L97.1 8.9L97.2 8.7L97.9 8.4L98.4 8.4L98.6 8.3L98.9 8.4L98.7 8.7L97.8 9.1L97.2 9.4L96.7 10.1ZM91.6 8.1L91.9 8.4L92.4 8.3L92.6 8.7L91.7 8.9L91.1 9.0L90.7 9.0L91.0 8.5L91.4 8.4L91.6 8.1ZM95.5 8.1L95.4 8.7L94.2 8.9L93.2 8.8L93.2 8.4L93.8 8.2L94.3 8.5L94.8 8.5L95.5 8.1ZM124.2 8.3L124.3 8.5L123.6 8.1L123.2 7.8L122.9 7.4L123.0 7.3L123.4 7.6L124.0 8.0L124.2 8.3ZM122.4 7.3L122.3 7.4L121.9 7.2L121.6 6.8L121.6 6.6L122.1 7.0L122.4 7.3ZM84.4 6.8L85.9 6.9L86.1 6.5L87.5 6.9L87.8 7.6L89.0 7.8L89.9 8.4L89.0 8.8L88.2 8.3L87.5 8.4L86.7 8.3L85.9 8.1L85.0 7.7L84.5 7.6L84.1 7.8L82.7 7.4L82.6 6.9L81.9 6.9L82.4 5.9L83.3 6.0L84.0 6.3L84.3 6.4L84.4 6.8ZM104.7 6.2L104.3 6.9L104.2 6.1L104.3 5.8L104.5 5.4L104.7 5.7L104.7 6.2ZM121.1 6.8L120.9 6.9L120.6 6.5L120.2 5.9L120.1 5.1L120.2 5.0L120.2 5.3L120.5 5.6L120.9 6.2L121.2 6.5L121.1 6.8ZM118.1 5.5L117.7 5.6L117.6 5.8L117.1 6.1L116.7 6.3L116.3 6.3L115.7 6.0L115.2 5.7L115.3 5.4L116.0 5.6L116.4 5.5L116.5 5.0L116.7 5.0L116.7 5.5L117.2 5.5L117.4 5.1L117.8 4.8L117.7 4.2L118.2 4.1L118.4 4.3L118.4 4.9L118.1 5.5ZM98.9 3.5L98.6 3.8L98.0 3.6L97.9 3.2L98.7 3.1L98.9 3.5ZM101.4 3.1L101.7 3.9L101.0 3.4L100.4 3.4L99.9 3.4L99.4 3.4L99.6 2.8L100.5 2.8L101.4 3.1ZM119.0 4.5L118.7 4.8L118.6 4.2L118.4 3.8L118.1 3.5L117.6 3.0L117.1 2.7L117.3 2.5L117.7 2.8L118.0 3.0L118.3 3.2L118.6 3.7L118.9 4.0L119.0 4.5ZM104.2 1.2L104.4 2.8L105.2 3.4L105.9 2.3L106.8 1.7L107.5 1.7L108.1 2.1L108.7 2.4L109.6 2.6L110.9 3.3L112.3 3.9L112.9 4.4L113.3 4.9L113.4 5.5L114.7 6.1L114.9 6.6L114.2 6.7L114.4 7.4L115.1 8.0L115.6 9.1L116.0 9.1L116.0 9.5L116.6 9.7L116.3 9.9L117.2 10.3L117.1 10.6L116.6 10.7L116.4 10.4L115.7 10.3L114.9 10.1L114.3 9.5L113.9 8.9L113.5 8.1L112.5 7.6L111.8 7.9L111.3 8.2L111.4 9.0L110.8 9.3L110.4 9.2L109.6 9.1L108.9 8.3L108.1 8.1L107.9 8.4L106.9 8.4L107.3 7.6L107.7 7.3L107.5 6.2L107.2 5.4L105.7 4.5L105.0 4.5L103.9 3.5L103.6 4.0L103.3 4.1L103.2 3.7L103.1 3.3L102.6 2.8L103.4 2.5L103.9 2.5L103.9 2.2L102.7 2.2L102.4 1.6L101.7 1.4L101.4 0.9L102.5 0.7L102.9 0.4L104.1 0.8L104.2 1.2ZM97.3 -1.4L96.7 -0.4L96.1 -0.2L95.4 -0.4L94.1 -0.4L93.4 -0.2L93.3 0.5L94.0 1.4L94.4 1.0L95.8 0.6L95.8 1.1L95.4 0.9L95.1 1.5L94.4 1.9L95.1 3.2L95.0 3.5L95.7 4.7L95.7 5.3L95.3 5.6L95.0 5.3L95.4 4.5L94.6 4.9L94.4 4.6L94.5 4.2L93.9 3.6L94.0 2.6L93.5 2.9L93.5 4.1L93.6 5.5L93.1 5.7L92.7 5.4L93.0 4.5L92.8 3.5L92.5 3.5L92.3 2.8L92.6 2.1L92.7 1.4L93.1 -0.2L93.3 -0.6L93.9 -1.3L94.5 -1.0L95.5 -0.9L96.4 -0.9L97.2 -1.6L97.3 -1.4ZM100.0 -1.1L99.9 -0.3L99.5 -0.4L99.4 0.3L99.8 0.8L99.5 0.9L99.2 0.3L99.0 -1.0L99.1 -1.8L99.4 -2.2L99.5 -1.6L99.9 -1.5L100.0 -1.1ZM82.2 5.9L81.4 5.9L80.7 5.0L79.7 4.2L79.4 3.6L78.8 2.8L78.4 2.1L77.8 0.7L77.1 -0.2L76.9 -1.0L76.6 -1.8L75.9 -2.5L75.5 -3.3L74.9 -3.9L74.1 -5.0L74.0 -5.5L74.5 -5.4L75.7 -5.2L76.4 -4.3L77.0 -3.6L77.5 -3.2L78.2 -2.1L79.0 -2.1L79.6 -1.4L80.1 -0.6L80.7 -0.1L80.4 0.7L80.8 1.1L81.1 1.1L81.2 1.8L81.5 2.3L82.1 2.4L82.4 3.1L82.3 4.3L82.2 5.9ZM91.6 -1.8L92.5 -0.9L91.5 -0.8L91.3 -0.1L91.3 0.8L90.6 1.5L90.5 2.5L90.2 4.0L90.1 3.7L89.2 4.1L88.9 3.5L88.4 3.4L88.0 3.1L87.1 3.5L86.8 3.0L86.3 3.0L85.6 2.9L85.5 1.6L85.1 1.3L84.8 0.5L84.7 -0.4L84.7 -1.3L85.2 -2.0L85.8 -1.7L86.4 -1.9L86.5 -2.7L86.9 -2.9L87.8 -3.1L88.4 -3.9L88.7 -4.5L89.0 -4.9L89.7 -5.4L90.3 -6.1L90.7 -6.9L91.0 -6.9L91.4 -6.4L91.4 -6.0L92.0 -5.7L92.6 -5.4L92.5 -5.0L92.0 -5.0L92.2 -4.5L91.6 -4.1L91.2 -3.2L91.7 -2.3L91.6 -1.8ZM98.2 -8.4L98.3 -7.8L98.3 -7.2L98.1 -6.3L97.8 -7.3L97.4 -6.8L97.7 -6.0L97.4 -5.6L96.5 -6.2L96.3 -6.9L96.5 -7.4L96.0 -7.8L95.8 -7.4L95.4 -7.5L94.9 -6.9L94.7 -7.2L95.0 -8.0L95.5 -8.3L95.9 -8.7L96.2 -8.2L96.8 -8.5L96.9 -9.0L97.5 -9.0L97.4 -9.8L98.1 -9.3L98.1 -8.8L98.2 -8.4ZM63.1 -6.2L62.4 -6.0L62.1 -6.8L61.9 -8.2L62.3 -9.8L62.8 -9.3L63.2 -8.6L63.5 -7.5L63.4 -6.5L63.1 -6.2ZM-47.3 -10.1L-48.0 -10.0L-48.1 -10.1L-47.9 -10.4L-47.9 -10.8L-47.5 -10.9L-47.3 -10.9L-47.3 -10.1ZM96.3 -10.3L96.1 -9.9L95.8 -9.3L95.6 -9.0L95.1 -9.7L95.2 -10.0L95.4 -10.3L95.5 -10.9L96.0 -10.9L95.8 -10.3L96.4 -11.2L96.3 -10.3ZM92.1 -9.3L91.0 -8.4L91.4 -9.1L92.0 -9.7L92.5 -10.4L92.9 -11.4L93.0 -10.6L92.5 -10.0L92.1 -9.3ZM94.7 -11.9L95.2 -11.6L95.7 -11.6L95.6 -11.2L95.3 -10.7L94.8 -10.4L94.8 -10.9L94.8 -11.4L94.7 -11.9ZM97.5 -12.2L97.7 -11.0L97.1 -11.3L97.1 -11.0L97.3 -10.4L97.0 -10.1L96.9 -10.8L96.7 -10.9L96.6 -11.5L97.0 -11.4L97.0 -11.8L96.6 -12.6L97.3 -12.5L97.5 -12.2ZM94.4 -13.1L94.2 -12.2L93.9 -12.7L93.5 -13.5L94.2 -13.4L94.4 -13.1ZM94.3 -18.5L94.7 -18.2L95.0 -18.5L95.1 -18.2L94.9 -17.8L95.2 -17.1L95.0 -16.3L94.5 -15.9L94.4 -15.1L94.6 -14.3L95.0 -14.2L95.3 -14.3L96.3 -13.8L96.2 -13.2L96.5 -13.0L96.4 -12.5L95.8 -13.0L95.5 -13.6L95.3 -13.2L94.8 -13.8L94.1 -13.6L93.7 -13.9L93.8 -14.3L94.0 -14.5L93.8 -14.8L93.7 -14.4L93.3 -15.0L93.2 -15.4L93.1 -16.4L93.5 -16.0L93.5 -17.6L93.8 -18.5L94.3 -18.5ZM-51.0 -18.2L-51.2 -18.0L-51.7 -18.0L-52.2 -17.9L-52.2 -18.4L-52.1 -18.5L-51.5 -18.5L-51.1 -18.4L-51.0 -18.2ZM-59.8 -17.9L-60.0 -17.7L-60.4 -17.9L-60.9 -18.2L-60.8 -18.5L-60.4 -18.5L-60.3 -18.5L-59.7 -18.4L-59.3 -18.2L-59.2 -17.9L-59.8 -17.9ZM-56.4 -19.9L-55.7 -19.7L-55.6 -19.9L-55.0 -19.9L-54.6 -19.6L-54.4 -19.6L-54.2 -19.3L-53.8 -19.3L-53.8 -19.0L-53.5 -19.0L-53.1 -18.6L-53.4 -18.2L-53.7 -18.4L-54.1 -18.4L-54.4 -18.4L-54.5 -18.2L-54.8 -18.2L-54.9 -18.4L-55.2 -18.3L-55.5 -17.6L-55.7 -17.8L-55.7 -18.0L-56.2 -18.2L-56.6 -18.1L-57.1 -18.2L-57.4 -18.0L-57.9 -18.3L-57.8 -18.7L-57.1 -18.5L-56.5 -18.4L-56.2 -18.7L-56.6 -19.1L-56.6 -19.5L-57.0 -19.6L-56.9 -19.9L-56.4 -19.9ZM85.7 -18.7L85.1 -18.2L84.4 -18.5L84.4 -19.4L84.8 -19.8L85.6 -20.1L86.1 -20.1L86.3 -19.7L85.9 -19.3L85.7 -18.7ZM-120.9 -19.1L-121.0 -18.9L-121.2 -19.1L-121.1 -19.3L-121.3 -19.7L-121.2 -19.8L-121.1 -20.0L-121.1 -20.2L-121.1 -20.3L-121.0 -20.2L-120.7 -20.1L-120.6 -20.0L-120.5 -19.9L-120.3 -19.5L-120.6 -19.2L-120.9 -19.1ZM-121.3 -20.6L-121.5 -20.6L-121.7 -20.8L-121.8 -20.9L-121.7 -21.0L-121.4 -20.9L-121.2 -20.8L-121.3 -20.6ZM-121.8 -21.2L-121.8 -21.1L-122.2 -21.1L-122.2 -21.2L-121.8 -21.2ZM-122.5 -21.3L-122.6 -21.3L-122.9 -21.3L-123.0 -21.5L-123.0 -21.6L-122.8 -21.7L-122.7 -21.7L-122.5 -21.3ZM-123.8 -22.0L-123.9 -21.9L-124.2 -22.1L-124.1 -22.1L-124.0 -22.2L-123.8 -22.2L-123.8 -22.0ZM-61.9 -22.8L-61.6 -22.4L-60.9 -22.5L-60.6 -22.3L-59.9 -21.7L-59.5 -21.2L-59.2 -21.2L-58.7 -21.0L-58.8 -20.7L-58.2 -20.7L-57.6 -20.3L-57.7 -20.1L-58.2 -19.9L-58.8 -19.9L-59.3 -20.0L-60.4 -19.9L-59.9 -20.4L-60.2 -20.7L-60.7 -20.7L-61.0 -21.0L-61.2 -21.6L-61.6 -21.6L-62.3 -21.8L-62.6 -22.0L-63.6 -22.2L-63.8 -22.4L-63.6 -22.6L-64.3 -22.7L-64.9 -22.2L-65.2 -22.2L-65.3 -21.9L-65.7 -21.8L-66.0 -21.9L-65.6 -22.2L-65.4 -22.6L-65.1 -22.8L-64.7 -23.0L-64.1 -23.1L-63.9 -23.2L-63.3 -23.1L-62.6 -23.1L-61.9 -22.8ZM-60.2 -23.8L-60.4 -23.7L-60.6 -24.3L-60.9 -24.6L-60.8 -25.2L-60.5 -25.2L-60.2 -24.3L-60.2 -23.8ZM94.2 -22.8L93.8 -22.0L93.4 -22.8L93.3 -23.6L93.8 -24.5L94.4 -25.3L94.8 -25.0L94.6 -24.4L94.2 -22.8ZM-60.5 -26.6L-61.3 -26.4L-61.4 -26.8L-61.0 -26.9L-60.5 -26.8L-60.5 -26.6ZM-59.8 -26.6L-60.0 -25.9L-60.1 -26.0L-60.1 -26.5L-60.4 -26.9L-60.4 -27.0L-59.8 -26.6ZM104.6 -34.1L104.7 -33.8L104.3 -33.2L104.0 -33.5L103.6 -33.3L103.4 -32.7L102.8 -33.0L102.9 -33.5L103.3 -34.1L103.7 -33.9L104.0 -34.4L104.6 -34.1ZM26.9 -35.7L26.3 -35.2L26.4 -35.1L26.4 -35.0L25.6 -34.6L25.2 -34.7L25.1 -35.1L25.4 -35.1L25.5 -35.1L25.6 -35.4L26.2 -35.4L26.9 -35.7ZM18.4 -35.7L18.8 -35.4L19.4 -35.4L20.0 -35.4L20.0 -35.2L20.4 -35.3L20.3 -35.0L19.2 -34.9L19.2 -35.1L18.3 -35.3L18.4 -35.7ZM12.1 -38.2L11.8 -37.4L11.9 -37.1L11.7 -36.6L11.1 -37.0L10.7 -37.1L9.7 -37.6L9.8 -38.1L10.7 -38.0L11.5 -38.1L12.1 -38.2ZM7.2 -41.2L7.6 -40.5L7.5 -39.2L7.2 -39.2L6.8 -38.9L6.5 -39.2L6.5 -40.4L6.3 -41.0L6.8 -40.9L7.2 -41.2ZM109.5 -37.1L109.2 -36.3L109.4 -35.8L109.0 -35.1L108.0 -34.7L106.6 -34.6L105.5 -33.5L105.0 -33.8L105.0 -34.6L103.6 -34.4L102.7 -33.9L101.8 -33.9L102.6 -33.1L102.0 -31.5L101.5 -31.0L101.2 -31.4L101.4 -32.3L100.9 -32.6L100.6 -33.3L101.3 -33.6L101.7 -34.2L102.5 -34.8L103.0 -35.4L104.6 -35.7L105.4 -35.5L106.2 -37.3L106.8 -36.8L107.9 -37.8L108.3 -38.2L108.8 -39.4L108.7 -40.6L109.0 -41.2L109.8 -41.4L110.3 -40.0L110.2 -39.2L109.5 -38.2L109.5 -37.1ZM7.4 -42.2L7.2 -41.4L6.8 -41.6L6.6 -42.3L6.8 -42.6L7.3 -43.0L7.4 -42.2ZM111.8 -44.2L112.4 -44.0L112.9 -44.4L113.1 -43.3L111.9 -43.0L111.3 -42.0L110.0 -42.7L109.6 -41.6L108.7 -41.6L108.6 -42.6L109.0 -43.3L109.9 -43.4L110.1 -44.8L110.3 -45.6L111.2 -44.5L111.8 -44.2ZM-49.5 -46.5L-48.9 -46.4L-48.2 -46.4L-48.6 -46.0L-48.9 -46.0L-49.8 -46.4L-50.0 -46.7L-49.7 -47.0L-49.5 -46.5ZM-48.0 -49.1L-48.4 -49.1L-49.4 -49.4L-50.1 -49.9L-49.9 -50.0L-48.8 -49.7L-48.0 -49.3L-48.0 -49.1ZM-96.0 -48.5L-96.4 -48.4L-97.6 -48.8L-97.9 -49.2L-98.6 -49.5L-98.7 -49.8L-99.5 -50.0L-99.8 -50.5L-99.7 -50.8L-98.9 -50.6L-98.4 -50.4L-97.7 -50.3L-97.4 -49.9L-97.1 -49.5L-96.3 -49.1L-96.0 -48.5ZM-43.6 -50.7L-44.1 -49.8L-43.6 -50.1L-43.1 -49.9L-43.4 -49.6L-42.7 -49.3L-42.3 -49.6L-41.6 -49.2L-41.8 -48.5L-41.2 -48.7L-41.1 -48.2L-40.9 -47.5L-41.2 -46.7L-41.6 -46.6L-42.1 -46.8L-41.9 -47.6L-42.1 -47.8L-43.0 -46.9L-43.5 -46.9L-43.0 -47.4L-43.7 -47.6L-44.5 -47.6L-46.0 -47.6L-46.2 -47.9L-45.7 -48.3L-46.0 -48.5L-45.4 -49.1L-44.6 -50.7L-44.1 -51.3L-43.4 -51.6L-43.1 -51.6L-43.2 -51.3L-43.6 -50.7ZM-103.1 -54.0L-102.4 -54.1L-102.6 -53.0L-101.9 -52.2L-102.2 -52.2L-102.7 -52.6L-103.0 -53.1L-103.4 -53.4L-103.5 -53.9L-103.5 -54.2L-103.1 -54.0ZM111.6 -50.7L112.4 -49.0L111.2 -49.3L110.8 -47.9L111.5 -46.8L111.5 -46.1L110.9 -46.7L110.4 -46.0L110.3 -46.8L110.3 -47.8L110.3 -48.9L110.4 -49.6L110.5 -51.0L110.0 -51.9L110.1 -53.3L110.8 -53.8L110.5 -54.2L110.8 -54.4L111.0 -53.7L111.3 -52.7L111.3 -51.8L111.6 -50.7ZM-5.3 -52.3L-6.7 -51.7L-7.8 -51.8L-7.1 -52.9L-7.5 -53.9L-6.5 -54.7L-5.9 -55.1L-5.2 -55.2L-4.4 -54.6L-4.8 -53.9L-4.7 -53.2L-5.3 -52.3ZM9.9 -55.6L9.4 -54.8L8.6 -55.4L8.5 -55.8L9.6 -56.1L9.9 -55.6ZM-118.9 -57.1L-119.7 -56.7L-120.1 -57.0L-120.2 -57.5L-119.5 -57.8L-119.1 -58.0L-118.5 -57.9L-118.2 -57.6L-118.9 -57.1ZM-2.3 -58.6L-3.2 -57.6L-2.4 -57.7L-1.5 -57.7L-1.7 -56.9L-2.4 -56.0L-1.6 -55.9L-0.9 -54.6L-0.3 -54.5L0.1 -53.3L0.4 -52.9L1.3 -52.7L1.2 -52.1L0.8 -51.8L1.1 -51.3L0.4 -50.8L-0.6 -50.8L-1.9 -50.5L-2.3 -50.7L-2.8 -50.2L-3.5 -50.3L-4.1 -50.0L-4.5 -50.2L-3.3 -51.2L-2.7 -51.4L-3.9 -51.6L-4.1 -52.0L-3.3 -52.3L-3.7 -52.8L-3.6 -53.5L-2.4 -53.4L-2.3 -54.0L-2.8 -54.6L-3.8 -54.8L-3.9 -55.1L-3.7 -55.5L-3.9 -55.8L-4.3 -55.3L-4.4 -56.3L-4.8 -56.8L-4.5 -57.8L-3.9 -58.6L-3.3 -58.6L-2.3 -58.6ZM-128.7 -59.9L-129.1 -59.8L-129.6 -59.9L-130.1 -60.2L-129.3 -60.4L-128.7 -60.3L-128.7 -59.9ZM-61.6 -62.2L-61.9 -61.6L-62.2 -61.7L-62.4 -62.0L-62.4 -62.1L-62.1 -62.4L-61.8 -62.4L-61.6 -62.2ZM-63.6 -62.7L-64.5 -62.2L-65.1 -62.2L-65.3 -62.5L-64.7 -62.9L-63.6 -62.9L-63.6 -62.7ZM-133.4 -63.8L-133.0 -63.6L-132.5 -63.7L-131.8 -63.4L-131.1 -63.3L-131.1 -63.2L-131.7 -63.0L-132.3 -63.2L-132.6 -63.4L-133.3 -63.3L-133.5 -63.4L-133.4 -63.8ZM-66.2 -65.7L-66.0 -65.2L-65.6 -65.4L-65.2 -65.1L-64.3 -64.8L-63.4 -64.5L-63.4 -64.0L-62.8 -64.1L-62.2 -63.7L-62.9 -63.4L-64.1 -63.7L-64.6 -64.1L-65.3 -63.6L-66.5 -63.1L-66.7 -63.6L-67.8 -63.5L-67.1 -64.0L-67.0 -64.8L-66.7 -65.7L-66.2 -65.7ZM-11.3 -66.5L-11.5 -65.8L-10.6 -65.1L-11.6 -64.4L-13.8 -63.7L-14.5 -63.5L-15.5 -63.6L-17.7 -64.0L-16.9 -64.4L-18.6 -64.9L-17.2 -65.1L-17.3 -65.4L-18.9 -65.6L-18.4 -66.3L-17.2 -66.4L-16.0 -65.7L-14.8 -66.3L-13.8 -66.0L-12.6 -66.5L-11.3 -66.5ZM-58.9 -67.1L-59.8 -67.1L-60.0 -67.6L-59.7 -68.1L-59.0 -68.3L-58.4 -68.0L-58.4 -67.6L-58.4 -67.4L-58.9 -67.1ZM-139.9 -69.0L-138.0 -68.2L-135.9 -67.2L-136.0 -66.6L-135.5 -66.3L-135.6 -67.1L-133.5 -66.9L-132.0 -66.0L-132.8 -65.5L-134.1 -65.4L-134.1 -64.5L-134.4 -64.3L-135.1 -64.3L-135.7 -64.6L-136.7 -64.9L-136.9 -65.4L-137.7 -65.5L-138.6 -65.4L-139.0 -65.7L-138.8 -66.1L-139.8 -65.9L-139.4 -65.4L-139.9 -65.0L139.9 -65.0L138.9 -64.5L137.8 -64.6L138.5 -64.1L139.0 -63.3L139.4 -63.0L139.5 -62.6L139.3 -62.3L137.8 -62.5L135.6 -61.8L134.9 -61.7L133.8 -60.9L132.6 -60.3L132.3 -59.9L131.2 -60.6L129.2 -59.8L128.9 -60.2L128.1 -59.7L127.1 -59.9L126.8 -59.2L125.9 -58.2L125.9 -57.8L126.8 -57.6L126.7 -56.2L126.0 -56.1L125.6 -55.3L126.0 -54.9L124.6 -54.3L124.3 -53.2L123.2 -53.0L122.9 -51.9L121.8 -51.0L121.5 -51.7L121.2 -53.2L120.8 -55.4L121.1 -56.8L121.8 -57.4L121.8 -57.8L123.0 -58.1L124.4 -59.3L125.8 -60.3L127.2 -61.1L127.8 -62.6L126.9 -62.5L126.4 -61.6L124.4 -60.5L123.8 -61.8L121.8 -61.4L119.8 -59.8L120.5 -59.1L118.7 -58.9L117.5 -58.8L117.6 -59.5L116.4 -59.7L115.4 -59.2L113.0 -59.3L110.5 -59.0L108.0 -57.1L105.0 -54.7L106.2 -54.6L106.6 -54.0L107.4 -53.8L107.9 -54.3L108.7 -54.2L109.8 -53.1L109.9 -52.2L109.2 -51.2L109.2 -50.0L108.8 -48.4L107.7 -47.0L107.4 -46.3L106.3 -45.1L105.3 -44.0L104.8 -43.4L103.8 -42.8L103.3 -42.8L102.8 -43.3L101.7 -42.6L101.6 -42.2L101.3 -42.3L101.0 -41.9L100.8 -41.6L100.8 -40.9L100.4 -40.7L100.2 -40.5L99.9 -40.2L99.4 -40.0L99.1 -39.8L99.1 -39.3L99.0 -39.2L99.3 -39.1L99.7 -38.6L100.4 -37.4L100.6 -36.8L100.6 -35.6L100.3 -35.1L99.6 -34.9L99.0 -34.5L98.3 -34.4L98.2 -34.9L98.3 -35.7L98.0 -36.7L98.6 -36.9L98.0 -37.7L97.7 -37.9L97.6 -37.8L97.3 -37.7L97.3 -37.9L97.1 -37.9L96.9 -38.1L97.1 -38.5L97.3 -38.7L97.2 -38.8L97.4 -39.4L97.4 -39.6L96.9 -39.7L96.6 -39.9L95.5 -39.6L94.9 -39.2L94.1 -38.9L94.5 -39.4L94.3 -39.8L94.9 -40.4L94.5 -40.9L93.8 -40.6L93.0 -39.9L92.5 -39.3L91.7 -39.2L91.3 -38.7L91.7 -38.1L92.4 -37.9L92.4 -37.4L93.0 -37.2L93.9 -37.9L94.6 -37.5L95.1 -37.5L95.2 -36.9L94.1 -36.7L93.7 -36.1L93.0 -35.6L92.6 -34.9L93.4 -34.4L93.7 -33.4L94.2 -32.5L94.7 -31.7L94.7 -30.9L94.2 -30.7L94.4 -30.1L94.9 -29.8L94.7 -29.0L94.5 -28.2L94.1 -28.1L93.5 -27.1L92.9 -25.7L92.2 -24.5L91.1 -23.6L90.0 -22.8L89.2 -22.7L88.7 -22.2L88.4 -22.5L88.0 -22.1L86.9 -21.6L86.1 -21.4L85.8 -20.3L85.4 -20.3L85.2 -21.0L85.4 -21.4L84.3 -21.7L84.0 -21.6L82.9 -20.7L82.3 -19.8L82.1 -19.1L82.7 -18.0L83.4 -16.7L84.1 -16.1L84.6 -15.3L85.0 -13.4L84.8 -11.7L84.2 -11.0L83.3 -10.4L82.7 -9.5L81.7 -8.6L81.4 -9.2L81.6 -9.9L81.1 -10.5L80.4 -10.6L80.1 -11.2L79.7 -12.2L79.0 -12.6L78.3 -12.6L78.5 -13.4L77.8 -13.4L77.7 -12.3L77.3 -10.8L77.0 -10.0L77.1 -9.2L77.6 -9.2L77.9 -8.3L78.1 -7.4L78.5 -6.9L79.0 -6.7L79.4 -6.2L79.5 -6.1L80.0 -5.5L80.3 -4.9L80.4 -4.2L80.3 -3.7L80.4 -3.4L80.4 -2.8L80.7 -2.5L81.0 -1.6L81.0 -1.3L80.4 -1.2L79.7 -2.0L78.8 -2.8L78.7 -3.3L78.2 -3.9L78.1 -4.8L77.9 -5.3L77.9 -6.0L77.8 -6.5L77.5 -6.8L77.3 -7.3L76.9 -7.9L76.5 -8.4L76.4 -7.8L76.3 -8.3L76.3 -9.0L76.6 -9.9L76.5 -10.7L76.7 -11.4L76.5 -12.0L76.5 -13.1L76.2 -13.6L76.0 -14.8L75.8 -16.1L75.5 -16.9L75.0 -16.4L74.1 -15.7L73.7 -15.8L73.2 -16.0L73.5 -17.3L73.3 -18.2L72.7 -19.4L72.8 -19.7L72.3 -19.9L71.8 -20.7L71.5 -21.2L71.5 -21.7L71.4 -22.2L71.0 -22.8L70.3 -22.8L70.4 -22.4L70.1 -21.8L69.8 -22.0L69.7 -21.9L69.5 -22.0L69.2 -22.1L69.1 -21.7L68.5 -21.7L67.6 -21.5L67.6 -20.7L67.2 -20.2L66.1 -19.5L65.2 -18.3L64.6 -17.7L63.9 -17.0L63.9 -16.6L63.5 -16.3L62.8 -16.0L62.4 -15.9L62.2 -15.1L62.3 -13.8L62.4 -13.0L62.1 -12.1L62.0 -10.4L61.6 -10.3L61.3 -9.5L61.5 -9.2L60.8 -8.9L60.6 -8.3L60.2 -8.0L59.5 -8.9L59.2 -10.3L58.9 -11.3L58.6 -11.8L58.2 -12.7L58.0 -14.0L57.8 -14.6L57.1 -16.0L56.8 -17.9L56.6 -19.2L56.6 -20.4L56.4 -21.4L55.3 -20.8L54.8 -20.9L53.7 -22.1L54.1 -22.5L53.9 -22.8L53.0 -23.7L52.4 -23.9L52.2 -24.7L51.6 -25.4L50.1 -25.2L48.9 -25.2L47.8 -25.1L46.3 -25.4L45.5 -25.6L44.6 -25.7L44.3 -27.0L43.9 -27.1L43.3 -27.0L42.5 -26.5L41.6 -26.8L40.8 -27.6L40.0 -27.9L39.5 -28.8L38.9 -30.1L38.5 -30.0L38.0 -30.3L37.7 -29.9L37.3 -30.0L37.4 -29.5L37.4 -29.3L37.6 -28.6L37.9 -27.7L38.3 -27.5L38.4 -27.1L39.0 -26.7L39.0 -26.3L38.9 -25.9L39.0 -25.6L39.3 -25.3L39.4 -25.0L39.5 -24.8L39.4 -25.5L39.6 -26.0L39.9 -26.1L40.1 -25.8L40.1 -25.2L39.9 -24.6L40.1 -24.2L40.2 -24.3L40.2 -24.0L40.9 -24.2L41.5 -24.2L42.0 -24.1L42.5 -24.8L43.1 -25.4L43.6 -26.1L43.8 -26.4L43.9 -26.3L43.8 -25.9L43.7 -25.7L43.8 -24.9L44.2 -24.2L44.6 -23.9L45.2 -23.7L45.6 -23.6L46.0 -23.0L46.2 -22.7L46.5 -22.5L46.5 -22.3L46.2 -21.7L46.1 -21.4L45.7 -21.1L45.4 -20.4L45.1 -20.5L44.9 -20.2L44.8 -19.7L44.9 -19.1L44.8 -18.9L44.5 -18.9L44.0 -18.6L43.9 -18.1L43.7 -17.9L43.2 -17.9L42.9 -17.6L42.9 -17.2L42.6 -16.9L42.1 -17.0L41.6 -16.7L41.3 -16.7L40.7 -16.4L40.6 -15.9L40.5 -15.6L39.8 -15.2L38.5 -14.7L37.8 -14.0L37.5 -13.9L37.2 -14.0L36.8 -13.6L36.3 -13.4L35.6 -13.3L35.5 -13.3L35.3 -13.0L35.1 -13.0L35.0 -12.7L34.6 -12.7L34.3 -12.6L33.8 -12.6L33.6 -13.2L33.6 -13.8L33.5 -14.1L33.3 -14.8L33.1 -15.2L33.3 -15.3L33.2 -15.7L33.3 -15.9L33.2 -16.3L33.1 -16.8L32.9 -17.1L32.8 -17.5L32.4 -17.8L32.0 -18.7L31.8 -19.5L31.3 -20.2L30.9 -20.3L30.4 -21.3L30.3 -22.0L30.4 -22.6L29.9 -23.7L29.5 -24.1L29.1 -24.3L28.9 -24.9L28.9 -25.1L28.7 -25.6L28.5 -25.8L28.2 -26.6L27.7 -27.4L27.3 -28.1L26.9 -28.1L27.0 -28.6L27.1 -29.0L27.2 -29.4L27.1 -29.5L26.9 -29.1L26.7 -28.3L26.5 -27.8L26.4 -27.6L26.1 -28.0L25.7 -28.4L25.2 -29.9L25.1 -29.8L25.4 -28.7L25.9 -27.7L26.5 -26.1L26.8 -25.6L27.0 -25.0L27.7 -23.9L27.6 -23.8L27.6 -23.1L28.5 -22.2L28.6 -22.0L28.9 -21.0L28.7 -20.8L28.8 -19.8L29.1 -18.6L29.4 -18.4L29.8 -18.0L30.3 -16.8L30.5 -15.9L30.9 -15.4L32.0 -14.5L32.4 -13.9L32.8 -13.3L33.1 -13.0L33.5 -12.7L33.7 -12.4L33.6 -12.0L33.2 -11.7L33.5 -11.5L33.8 -11.3L33.9 -10.9L34.3 -10.4L34.7 -10.4L35.4 -10.7L36.2 -10.8L36.9 -11.1L37.3 -11.2L37.6 -11.4L38.0 -11.4L38.3 -11.4L38.6 -11.6L39.1 -11.7L39.4 -12.0L39.7 -12.0L39.7 -11.7L39.7 -11.2L39.7 -10.6L39.5 -10.3L39.3 -9.2L38.9 -8.1L38.4 -6.8L37.8 -5.3L37.1 -4.2L36.2 -2.9L35.4 -2.0L34.2 -1.1L33.5 -0.3L32.7 0.9L32.5 1.4L32.3 1.7L31.8 2.1L31.6 2.5L31.3 2.6L31.2 3.3L30.9 3.7L30.8 4.3L30.5 4.7L30.1 5.9L30.1 6.5L30.6 6.8L30.7 7.1L30.5 7.7L30.5 8.0L30.4 8.5L30.7 9.1L31.0 10.1L31.3 10.3L31.5 10.8L31.4 11.8L31.5 12.6L31.5 14.2L31.7 14.7L31.5 15.4L31.1 16.1L30.7 16.7L29.9 17.1L29.1 17.6L28.2 18.7L27.9 18.8L27.3 19.6L27.0 19.8L27.0 20.5L27.3 21.3L27.5 21.8L27.5 22.1L27.6 22.1L27.6 23.1L27.5 23.5L27.7 23.7L27.6 24.1L27.2 24.5L26.6 24.8L25.7 25.4L25.3 25.7L25.4 26.1L25.6 26.2L25.5 26.7L25.3 27.5L25.2 28.3L25.0 28.8L24.5 29.3L24.3 29.4L24.0 29.9L23.8 30.4L23.4 31.1L22.5 32.2L21.9 32.8L21.3 33.2L20.5 33.6L20.1 33.7L20.0 33.9L19.6 33.8L19.2 34.0L18.3 33.8L17.9 33.9L17.5 33.9L16.7 34.3L16.1 34.4L15.6 34.8L15.2 34.8L14.9 34.5L14.7 34.4L14.3 34.0L14.3 34.1L14.2 33.9L14.2 33.3L13.9 32.6L14.2 32.4L14.2 31.7L13.6 30.7L13.3 29.9L12.7 28.6L12.1 27.8L11.8 27.1L11.6 26.1L11.5 25.4L11.2 23.9L11.2 22.7L11.1 22.1L10.8 21.7L10.4 20.9L10.0 19.7L9.8 19.0L9.2 18.1L9.1 17.3L9.0 16.7L9.2 15.8L9.4 14.9L9.5 14.4L9.7 13.5L9.9 13.1L10.3 12.5L10.6 12.0L10.7 11.3L10.6 10.7L10.4 10.4L10.2 9.8L10.0 9.2L10.0 9.0L10.3 8.6L10.0 7.6L9.9 6.9L9.5 6.3L9.6 6.1L9.5 5.8L9.3 5.0L8.6 4.0L7.8 3.0L7.3 2.1L6.8 1.1L6.9 0.8L7.0 0.5L7.2 -0.3L7.4 -1.0L7.2 -1.2L7.5 -2.3L7.6 -3.1L7.3 -3.7L7.0 -3.9L6.8 -4.4L6.6 -4.5L6.6 -4.8L5.8 -4.4L5.5 -4.5L5.2 -4.2L4.6 -4.3L4.2 -4.9L3.9 -5.6L3.4 -6.3L2.8 -6.3L2.1 -6.3L1.5 -6.1L0.8 -5.9L-0.4 -5.3L-0.8 -5.0L-1.5 -4.7L-2.2 -5.0L-2.6 -5.0L-3.1 -5.2L-3.6 -5.2L-4.5 -5.0L-5.1 -4.7L-5.8 -4.3L-6.0 -4.4L-6.2 -4.4L-7.0 -4.8L-7.7 -5.6L-8.4 -6.1L-8.9 -6.8L-9.1 -6.9L-9.7 -7.3L-10.1 -7.8L-10.2 -8.2L-10.3 -8.9L-10.6 -9.5L-10.9 -9.9L-11.1 -10.0L-11.3 -10.2L-11.4 -10.7L-11.5 -10.9L-11.8 -11.0L-12.2 -11.5L-12.5 -11.5L-12.7 -11.8L-12.7 -12.0L-12.9 -12.2L-13.0 -12.4L-13.1 -13.2L-13.0 -13.6L-13.3 -14.4L-13.7 -14.7L-13.4 -14.9L-13.0 -15.6L-12.8 -16.1L-12.9 -16.7L-12.6 -17.2L-12.5 -18.1L-12.6 -19.1L-12.7 -19.6L-12.6 -20.1L-12.8 -20.6L-13.3 -21.0L-13.2 -21.4L-13.2 -21.9L-12.9 -22.2L-12.6 -22.7L-12.7 -23.0L-12.4 -23.7L-12.0 -24.4L-11.7 -24.5L-11.5 -25.1L-11.5 -25.6L-11.2 -26.3L-10.7 -26.6L-10.2 -27.6L-9.8 -28.0L-9.1 -28.1L-8.5 -28.8L-8.1 -29.1L-7.4 -29.9L-7.6 -31.2L-7.3 -32.0L-7.2 -32.6L-6.7 -33.2L-5.9 -33.7L-5.4 -34.1L-4.9 -35.1L-4.6 -35.8L-4.0 -35.8L-3.6 -35.3L-2.8 -35.4L-2.0 -35.2L-1.7 -35.2L-0.9 -35.7L-0.1 -35.9L0.4 -36.3L1.1 -36.6L2.5 -36.8L3.7 -36.9L4.1 -36.7L4.9 -37.1L5.7 -37.1L6.0 -36.9L6.5 -36.9L7.4 -37.4L7.9 -37.2L7.9 -36.7L8.6 -37.1L8.6 -36.9L8.2 -36.4L8.2 -35.9L8.5 -35.7L8.4 -34.8L7.9 -34.3L8.0 -33.8L8.4 -33.8L8.6 -33.3L8.9 -33.1L9.8 -32.8L10.2 -32.9L10.8 -32.7L11.8 -32.3L12.2 -31.4L12.9 -31.2L14.0 -30.8L14.8 -30.3L15.2 -30.5L15.6 -31.0L15.4 -31.8L15.6 -32.2L16.2 -32.7L16.7 -32.8L17.8 -32.6L18.1 -32.2L18.3 -32.2L18.6 -32.0L19.4 -31.9L19.6 -31.6L20.6 -31.6L21.3 -31.3L22.1 -31.0L22.5 -30.9L23.1 -31.2L23.4 -31.5L24.1 -31.6L24.6 -31.4L24.8 -30.9L25.0 -31.3L25.6 -31.0L26.2 -31.0L26.6 -31.2L26.8 -31.5L26.8 -31.6L27.0 -32.1L27.2 -32.8L27.3 -33.1L27.6 -33.9L28.0 -34.6L27.9 -35.4L28.1 -35.8L27.8 -36.3L28.1 -36.7L27.6 -36.6L27.0 -36.8L26.4 -36.2L25.3 -36.1L24.6 -36.6L23.8 -36.7L23.6 -36.3L23.1 -36.1L22.3 -36.7L21.5 -36.7L21.0 -37.7L20.4 -38.2L20.8 -39.0L20.3 -39.5L21.2 -40.4L22.4 -40.5L22.7 -41.2L24.2 -41.1L25.1 -41.7L26.0 -42.0L27.3 -42.0L28.7 -41.3L29.8 -40.9L30.7 -41.1L31.4 -41.0L32.3 -41.5L32.4 -42.0L32.2 -42.6L31.8 -43.0L31.3 -43.1L31.0 -43.4L30.1 -44.3L29.2 -44.7L28.5 -45.2L29.1 -45.4L29.7 -46.2L29.3 -46.6L30.4 -47.0L30.4 -47.3L29.7 -47.1L29.1 -47.0L28.6 -46.7L27.8 -46.6L27.2 -46.3L27.2 -45.7L27.6 -45.4L28.4 -45.5L28.2 -45.1L27.4 -44.9L26.3 -44.4L25.9 -44.6L26.1 -45.0L25.2 -45.3L25.4 -45.5L26.1 -45.9L25.9 -46.1L24.7 -46.3L24.6 -46.7L23.9 -46.6L23.6 -46.0L23.0 -45.3L23.0 -45.0L22.6 -44.8L22.4 -44.9L22.2 -43.7L21.8 -43.3L21.5 -42.6L21.8 -42.0L21.8 -41.6L22.5 -41.3L22.4 -41.1L21.5 -41.0L21.1 -40.7L20.5 -40.2L20.2 -40.6L20.2 -40.8L19.8 -40.9L19.4 -40.9L18.4 -40.7L19.0 -40.1L18.6 -40.0L18.1 -40.0L17.7 -40.5L17.6 -40.3L17.8 -39.7L18.1 -39.2L17.9 -39.0L18.3 -38.5L18.7 -38.2L18.7 -37.7L18.0 -37.9L18.2 -37.4L17.7 -37.3L18.0 -36.4L17.5 -36.4L16.8 -36.8L16.5 -37.6L16.4 -38.3L16.1 -38.8L15.7 -39.3L15.7 -39.6L15.5 -39.7L15.5 -39.9L15.1 -40.3L15.0 -40.7L15.1 -41.4L15.2 -41.7L15.1 -41.9L14.9 -42.0L14.7 -42.3L14.3 -42.5L13.6 -42.8L13.2 -43.2L12.4 -43.5L11.8 -44.2L11.9 -44.3L11.6 -44.7L11.6 -45.1L11.1 -45.2L10.8 -44.8L10.6 -45.1L10.6 -45.5L10.7 -45.5L10.8 -45.6L10.2 -45.7L9.6 -45.4L9.6 -44.9L9.5 -44.6L9.8 -44.1L10.5 -43.6L10.9 -42.8L11.8 -42.0L12.4 -42.0L12.6 -41.7L12.3 -41.5L13.0 -41.2L13.6 -40.9L14.3 -40.4L14.4 -40.2L14.2 -39.8L13.8 -40.3L13.1 -40.4L12.8 -39.8L13.3 -39.4L13.2 -38.9L12.9 -38.8L12.5 -38.0L12.2 -37.9L12.2 -38.2L12.3 -38.8L12.5 -39.0L12.2 -39.5L12.0 -40.0L11.7 -40.2L11.4 -40.6L10.9 -40.8L10.6 -41.2L10.0 -41.3L9.4 -41.7L8.7 -42.4L8.2 -42.9L7.9 -43.9L7.5 -44.0L6.9 -44.4L6.5 -44.2L6.1 -43.8L5.8 -43.7L5.1 -43.1L3.5 -43.4L2.4 -43.1L2.3 -42.5L2.4 -41.9L1.6 -41.2L0.6 -41.0L0.6 -40.7L0.1 -40.1L-0.2 -39.3L0.1 -38.7L-0.4 -38.3L-0.5 -37.6L-1.1 -37.4L-1.7 -36.7L-2.7 -36.7L-3.4 -36.7L-3.9 -36.3L-4.2 -35.9L-4.6 -36.0L-4.8 -36.4L-5.1 -36.9L-5.8 -37.1L-6.1 -36.8L-6.5 -37.0L-6.9 -36.9L-6.8 -37.7L-6.9 -38.3L-7.2 -38.4L-7.4 -38.7L-7.3 -39.4L-7.0 -39.8L-7.0 -40.2L-6.8 -40.8L-6.8 -41.2L-7.0 -41.5L-7.0 -41.9L-7.0 -42.6L-7.3 -43.0L-6.2 -43.7L-5.2 -43.6L-4.2 -43.6L-3.4 -43.4L-2.7 -43.5L-1.5 -43.4L-1.1 -44.0L-0.9 -46.0L-1.7 -47.1L-2.3 -47.6L-3.5 -48.0L-3.6 -48.7L-2.6 -48.9L-1.3 -48.6L-1.5 -49.8L-0.8 -49.3L1.0 -50.1L1.3 -50.9L2.0 -51.1L2.6 -51.3L3.0 -51.6L3.7 -53.1L4.7 -53.5L5.4 -53.5L5.5 -53.7L6.2 -53.7L6.3 -53.5L6.8 -54.0L6.7 -54.4L6.6 -55.0L6.3 -55.5L6.3 -56.5L6.4 -56.8L6.6 -57.1L7.3 -57.2L7.6 -57.4L8.2 -57.7L8.2 -57.2L8.0 -56.9L8.1 -56.6L8.5 -56.5L8.3 -56.1L8.1 -56.2L7.5 -55.5L7.7 -55.0L7.7 -54.6L8.5 -54.4L8.5 -54.0L9.3 -54.2L9.7 -54.5L10.6 -54.1L11.0 -53.8L11.5 -54.1L12.7 -54.5L13.7 -54.9L14.5 -54.7L14.5 -54.4L15.3 -54.4L15.5 -54.9L16.5 -55.2L16.4 -56.0L16.4 -56.8L16.8 -57.4L17.5 -57.8L18.1 -57.0L18.7 -57.0L18.9 -57.8L19.0 -58.4L18.7 -58.3L18.2 -58.6L18.1 -59.2L19.1 -59.5L20.1 -59.6L20.9 -59.4L21.7 -59.5L22.6 -60.0L21.8 -60.5L20.4 -60.4L19.0 -60.1L17.8 -59.8L17.3 -60.4L16.6 -60.7L16.7 -61.7L16.4 -62.6L16.7 -63.2L17.4 -63.8L19.2 -64.9L19.7 -65.1L19.7 -65.5L18.6 -66.0L17.2 -65.7L16.5 -65.0L16.6 -64.4L15.4 -63.6L13.9 -62.7L13.3 -61.3L13.9 -60.6L14.6 -60.1L13.9 -59.0L13.1 -58.7L12.8 -57.0L12.3 -56.1L11.4 -56.2L11.0 -55.4L10.1 -55.4L9.8 -56.3L9.2 -57.4L8.6 -58.9L8.0 -59.5L6.5 -58.3L5.5 -58.1L4.4 -58.6L4.1 -59.7L3.9 -62.0L4.6 -62.6L6.6 -63.5L8.2 -64.5L9.6 -65.9L11.5 -67.8L12.8 -68.6L14.9 -69.8L16.6 -70.3L17.9 -70.2L19.1 -71.0L20.5 -71.0L21.9 -71.2L24.3 -70.5L23.3 -70.2L24.2 -69.6L25.0 -69.9L26.2 -69.3L28.4 -69.1L31.3 -67.9L31.9 -67.5L32.0 -66.8L31.1 -66.3L29.8 -66.0L26.4 -66.8L25.8 -66.6L27.1 -65.9L27.2 -64.4L28.2 -64.1L28.8 -63.9L28.9 -64.3L28.4 -64.8L28.9 -65.1L30.8 -64.5L31.4 -64.8L30.9 -65.5L32.7 -66.5L33.4 -66.4L34.1 -66.1L34.6 -66.8L34.0 -67.4L34.3 -68.0L33.8 -68.6L35.9 -68.2L36.4 -67.7L35.4 -67.6L35.4 -67.0L36.0 -66.7L37.2 -66.9L37.4 -67.5L39.0 -68.0L41.7 -68.9L42.3 -68.8L41.6 -68.2L42.5 -68.1L43.1 -68.4L44.5 -68.5L45.7 -68.9L46.6 -68.3L47.5 -68.9L46.6 -69.5L47.0 -69.9L49.3 -69.5L50.4 -69.2L53.2 -68.1L53.8 -68.6L53.0 -69.1L52.9 -69.4L52.0 -69.5L52.3 -69.9L51.8 -70.7L51.8 -71.0L53.3 -71.9L53.8 -72.8L54.3 -73.0L56.4 -72.8L56.6 -72.2L55.8 -71.4L56.3 -71.1L56.6 -70.4L56.4 -69.0L57.2 -68.4L56.9 -67.7L55.4 -66.3L56.3 -66.2L56.6 -66.5L57.4 -66.8L57.6 -67.3L58.3 -67.8L57.9 -68.3L58.2 -69.0L57.4 -69.1L57.2 -69.6L57.8 -70.6L56.8 -71.4L58.2 -72.1L58.0 -72.8L58.4 -72.9L58.8 -72.3L58.5 -71.3L59.3 -71.2L59.0 -71.9L60.3 -72.3L61.9 -72.3L63.3 -71.7L62.6 -72.6L62.6 -73.6L63.9 -73.9L65.8 -73.8L67.5 -73.9L66.8 -74.5L67.7 -75.1L68.6 -75.1L70.1 -75.6L72.2 -75.8L72.4 -76.0L74.5 -76.1L75.1 -75.9L76.9 -76.4L78.3 -76.4L78.5 -76.9L79.2 -77.3L81.1 -77.7L82.4 -77.4L81.4 -77.1L83.1 -77.0L83.3 -76.5L84.0 -76.7L86.3 -76.7L88.1 -76.2L88.7 -75.8L88.5 -75.3L87.6 -75.0L85.6 -74.5L85.0 -74.2L86.0 -74.0L87.1 -73.8L87.8 -74.0L88.2 -73.3L88.6 -73.6L89.8 -73.8L92.3 -73.6L92.5 -73.1L95.7 -73.0L95.8 -73.7L97.4 -73.6L98.7 -73.6L99.9 -73.0L100.3 -72.4L99.8 -72.0L100.8 -71.2L102.0 -70.8L102.8 -71.8L104.0 -71.4L105.3 -71.7L106.8 -71.3L107.4 -71.6L108.7 -71.5L108.1 -72.4L109.1 -72.8L116.2 -72.2L116.8 -71.6L118.9 -70.8L122.0 -71.0L123.5 -70.9L124.2 -70.5L124.1 -69.7L125.1 -69.4L126.1 -69.6L127.5 -69.7L128.9 -69.5L130.4 -69.6L131.8 -68.7L132.7 -69.0L132.1 -69.7L132.4 -70.1L134.9 -69.8L136.5 -69.9L138.8 -69.4L-139.9 -69.0ZM38.2 -41.3L38.6 -40.6L38.9 -40.5L39.2 -40.3L38.5 -40.2L38.4 -39.4L38.2 -39.0L38.0 -38.8L38.0 -38.3L38.2 -37.6L39.0 -37.4L39.5 -36.9L40.6 -36.7L41.8 -37.0L41.9 -37.2L41.8 -37.9L41.9 -39.0L41.3 -39.3L41.5 -40.0L40.9 -40.0L41.1 -40.9L41.8 -40.6L42.5 -41.0L42.0 -41.6L41.7 -42.1L41.1 -41.9L41.0 -41.1L40.8 -41.8L40.8 -42.0L40.9 -42.4L40.8 -42.8L39.9 -43.1L39.5 -44.0L39.1 -44.3L39.1 -44.6L39.8 -44.5L39.9 -45.2L40.5 -45.4L41.2 -45.3L41.4 -46.2L41.2 -46.9L40.4 -46.8L39.8 -47.0L38.9 -46.6L38.2 -46.4L37.8 -45.8L37.0 -45.6L36.3 -44.6L37.0 -43.7L36.9 -43.0L37.7 -41.8L38.2 -41.3ZM-74.3 -69.1L-74.8 -68.8L-75.8 -69.1L-76.5 -69.0L-77.5 -69.4L-76.9 -69.7L-76.3 -70.1L-75.5 -69.9L-75.0 -69.7L-74.8 -69.5L-74.3 -69.1ZM-139.9 -71.5L139.9 -70.8L139.0 -70.8L138.9 -71.1L-139.9 -71.5ZM-139.9 -71.5L-139.8 -71.6L-139.1 -71.6L-138.0 -71.3L-138.0 -71.1L-138.8 -70.9L-139.9 -70.8L-139.9 -71.5ZM-70.4 -69.5L-70.4 -68.5L-69.3 -69.3L-68.4 -68.6L-68.6 -67.9L-67.9 -67.2L-67.1 -67.9L-66.5 -68.8L-66.4 -69.9L-65.3 -69.8L-64.2 -69.7L-63.2 -69.2L-63.1 -68.7L-63.7 -68.1L-63.1 -67.6L-63.2 -67.1L-64.8 -66.4L-65.8 -66.3L-66.6 -66.6L-66.9 -66.1L-67.6 -65.2L-67.9 -64.8L-68.8 -64.1L-69.9 -64.0L-70.5 -63.6L-70.5 -63.0L-71.4 -62.8L-72.4 -62.0L-73.2 -60.9L-73.5 -60.1L-73.6 -58.9L-72.4 -58.8L-72.1 -57.8L-71.7 -57.1L-70.6 -57.3L-69.2 -56.9L-68.4 -56.5L-67.9 -56.0L-66.9 -55.7L-66.1 -55.3L-64.8 -55.2L-63.9 -55.1L-64.1 -54.3L-63.8 -53.3L-63.2 -52.2L-62.1 -51.2L-61.5 -51.5L-61.1 -52.6L-61.5 -54.1L-62.0 -54.7L-60.8 -55.1L-59.9 -55.8L-59.5 -56.5L-59.5 -57.2L-60.1 -58.1L-61.0 -58.8L-60.1 -59.9L-60.4 -60.8L-60.7 -62.3L-60.1 -62.6L-58.8 -62.3L-58.0 -62.2L-57.4 -62.4L-56.7 -62.1L-55.7 -61.5L-55.5 -61.1L-54.1 -61.1L-54.1 -60.2L-53.8 -59.0L-53.1 -58.8L-52.6 -58.2L-51.4 -58.8L-50.7 -59.9L-50.2 -60.3L-49.6 -59.4L-48.6 -58.2L-47.7 -57.0L-48.0 -56.3L-47.0 -55.8L-46.3 -55.2L-45.0 -54.9L-44.5 -54.6L-44.2 -53.8L-43.6 -53.6L-43.3 -53.3L-43.3 -52.1L-43.8 -51.8L-44.4 -51.4L-45.7 -51.1L-46.6 -50.2L-48.0 -50.1L-49.6 -50.3L-50.8 -50.3L-51.6 -50.2L-52.2 -49.5L-53.2 -49.1L-54.4 -47.7L-55.2 -46.8L-54.6 -47.0L-53.3 -48.3L-51.7 -49.1L-50.5 -49.2L-49.9 -48.7L-50.6 -48.1L-50.3 -47.0L-50.1 -46.2L-49.1 -45.7L-47.8 -45.9L-47.0 -47.0L-47.0 -46.3L-46.5 -45.9L-47.4 -45.3L-49.1 -44.7L-49.9 -44.3L-50.8 -43.5L-51.4 -43.6L-51.4 -44.5L-50.1 -45.3L-51.3 -45.3L-52.2 -45.1L-52.0 -44.8L-52.9 -44.3L-53.7 -44.0L-54.5 -43.7L-54.9 -43.0L-55.0 -42.9L-55.0 -42.3L-54.8 -41.8L-54.5 -41.8L-54.5 -42.1L-54.3 -41.9L-54.4 -41.6L-54.9 -41.5L-55.3 -41.5L-55.8 -41.3L-56.2 -41.3L-56.6 -41.2L-57.3 -40.9L-56.1 -41.1L-55.9 -40.9L-57.0 -40.6L-57.5 -40.6L-57.5 -40.8L-57.7 -40.5L-57.5 -40.4L-57.6 -39.7L-58.2 -38.9L-58.3 -39.2L-58.4 -39.2L-58.7 -39.5L-58.5 -39.0L-58.3 -38.8L-58.3 -38.4L-58.6 -38.0L-59.0 -37.2L-59.1 -37.3L-58.8 -37.9L-59.2 -38.3L-59.3 -39.1L-59.5 -38.7L-59.3 -38.1L-59.8 -38.2L-59.3 -37.9L-59.3 -37.0L-59.0 -36.9L-59.0 -36.6L-58.8 -35.6L-59.3 -34.8L-60.1 -34.5L-60.6 -33.9L-61.0 -33.9L-61.4 -33.5L-61.5 -33.2L-62.4 -32.5L-62.8 -32.0L-63.2 -31.4L-63.3 -30.7L-63.2 -30.0L-62.9 -29.2L-62.6 -28.5L-62.6 -28.0L-62.2 -26.9L-62.2 -26.2L-62.3 -25.8L-62.5 -25.2L-62.7 -25.1L-63.1 -25.2L-63.2 -25.6L-63.5 -25.9L-63.9 -26.7L-64.3 -27.5L-64.4 -27.9L-64.2 -28.6L-64.4 -29.1L-65.0 -29.9L-65.3 -30.1L-66.1 -29.6L-66.3 -29.7L-66.6 -30.2L-67.1 -30.4L-68.0 -30.3L-68.7 -30.4L-69.3 -30.3L-69.6 -30.2L-69.5 -29.9L-69.5 -29.5L-69.3 -29.3L-69.5 -29.2L-69.8 -29.3L-70.0 -29.1L-70.6 -29.1L-71.2 -29.7L-71.9 -29.6L-72.4 -29.8L-72.9 -29.7L-73.6 -29.5L-74.3 -28.7L-75.1 -28.3L-75.5 -27.8L-75.7 -27.4L-75.7 -26.7L-75.6 -26.2L-75.5 -25.9L-75.8 -25.0L-75.9 -24.3L-76.0 -22.9L-76.0 -22.4L-75.9 -21.9L-75.7 -21.4L-75.5 -20.6L-75.0 -19.9L-74.8 -19.3L-74.5 -18.8L-73.7 -18.6L-73.4 -18.1L-72.7 -18.4L-72.1 -18.5L-71.5 -18.7L-71.0 -18.9L-70.5 -19.3L-70.3 -19.9L-70.3 -20.7L-70.1 -21.0L-69.6 -21.3L-68.8 -21.5L-68.1 -21.5L-67.6 -21.5L-67.5 -21.3L-67.5 -20.8L-67.9 -20.3L-68.1 -19.6L-67.9 -19.5L-68.1 -19.0L-68.2 -18.3L-68.4 -18.5L-68.6 -18.5L-68.6 -18.4L-68.5 -18.3L-68.5 -18.1L-68.6 -17.6L-68.5 -17.5L-68.6 -17.1L-68.6 -17.0L-68.7 -16.5L-68.8 -16.3L-68.9 -16.2L-69.1 -15.9L-68.8 -15.7L-68.8 -15.9L-68.6 -15.7L-68.5 -15.7L-68.3 -15.9L-68.1 -15.9L-68.0 -15.8L-67.9 -15.8L-67.5 -15.8L-67.2 -15.8L-66.9 -15.9L-66.8 -16.0L-66.6 -16.0L-66.4 -15.9L-66.2 -15.9L-66.0 -16.0L-65.7 -15.9L-65.6 -15.8L-65.3 -15.6L-65.1 -15.4L-64.8 -15.3L-64.6 -15.0L-64.7 -14.9L-64.7 -14.7L-64.6 -14.3L-64.8 -14.0L-64.9 -13.6L-64.9 -13.1L-64.9 -12.9L-64.9 -12.4L-65.0 -12.3L-65.1 -11.9L-65.0 -11.6L-65.2 -11.4L-65.1 -11.1L-65.0 -10.9L-64.8 -10.4L-64.5 -10.0L-64.1 -9.6L-63.9 -9.2L-63.9 -9.0L-63.6 -9.0L-63.5 -9.0L-63.3 -8.8L-62.9 -8.9L-62.6 -9.1L-62.1 -9.3L-61.8 -9.6L-61.4 -9.6L-61.4 -9.5L-61.0 -9.4L-60.6 -9.2L-60.4 -8.9L-60.1 -8.7L-59.7 -8.6L-59.1 -9.3L-58.8 -9.4L-58.8 -9.8L-58.6 -10.6L-58.2 -11.1L-57.7 -11.1L-57.7 -11.3L-57.0 -11.2L-56.4 -11.7L-56.1 -12.0L-55.8 -12.4L-55.5 -12.4L-55.3 -12.1L-55.4 -11.8L-55.4 -11.5L-55.9 -11.4L-55.6 -11.0L-55.7 -10.4L-56.0 -9.9L-55.7 -9.1L-55.4 -9.1L-55.2 -9.9L-55.4 -10.2L-55.5 -11.0L-54.5 -11.4L-54.6 -11.8L-54.3 -12.2L-54.1 -11.5L-53.5 -11.4L-53.0 -10.9L-53.0 -10.6L-52.3 -10.5L-51.5 -10.6L-51.0 -10.2L-50.4 -10.1L-50.0 -10.4L-50.0 -10.6L-49.0 -10.7L-48.1 -10.7L-48.7 -10.4L-48.5 -9.9L-47.9 -9.9L-47.3 -9.4L-47.1 -8.6L-46.7 -8.6L-46.4 -8.4L-45.9 -8.0L-45.4 -7.3L-45.4 -6.8L-45.1 -6.8L-44.7 -6.3L-44.4 -6.0L-43.5 -5.8L-43.4 -6.0L-42.8 -6.0L-41.9 -5.8L-41.7 -5.6L-41.1 -5.4L-40.3 -4.6L-40.1 -4.2L-39.9 -4.2L-39.7 -3.6L-39.2 -1.9L-38.8 -1.7L-38.8 -1.0L-39.4 -0.2L-39.2 0.1L-37.8 0.2L-37.7 1.2L-37.2 0.6L-36.2 0.9L-34.9 1.6L-34.5 2.1L-34.6 2.7L-33.7 2.4L-32.2 2.9L-31.1 2.9L-29.9 3.7L-28.9 4.8L-28.3 5.1L-27.7 5.1L-27.4 5.5L-27.1 6.7L-27.0 7.3L-27.3 9.0L-27.7 9.6L-28.8 11.0L-29.3 12.2L-29.9 13.0L-30.0 13.1L-30.3 13.8L-30.2 15.7L-30.4 17.2L-30.5 17.9L-30.8 18.3L-30.9 19.6L-31.7 20.9L-31.8 21.9L-32.4 22.4L-32.6 23.0L-33.5 23.0L-34.7 23.4L-35.2 23.8L-36.1 24.1L-37.0 24.9L-37.7 25.9L-37.8 26.6L-37.7 27.2L-37.8 28.2L-38.0 28.7L-38.5 29.2L-39.4 31.0L-40.1 31.8L-40.6 32.2L-41.0 33.2L-41.5 33.8L-41.8 34.4L-42.7 35.0L-43.3 34.8L-43.7 34.9L-44.4 34.4L-44.9 34.5L-45.4 33.9L-45.5 34.4L-44.5 35.3L-44.6 36.0L-44.1 36.4L-44.1 36.9L-44.9 38.2L-46.0 38.7L-47.6 38.9L-48.4 38.8L-48.3 39.4L-48.4 40.2L-48.3 40.7L-48.8 41.0L-49.5 41.2L-50.3 40.8L-50.6 41.1L-50.5 42.1L-50.0 42.4L-49.5 42.0L-49.3 42.6L-50.0 42.9L-50.6 43.5L-50.8 44.5L-50.9 45.0L-51.7 45.0L-52.3 45.6L-52.5 46.3L-51.7 47.0L-51.0 47.2L-51.3 48.1L-52.2 48.7L-52.7 49.9L-53.4 50.3L-53.7 50.7L-53.5 51.8L-53.0 52.4L-53.3 52.3L-54.0 52.3L-54.3 52.5L-55.0 52.9L-55.2 53.8L-55.5 53.9L-56.4 53.5L-57.3 52.8L-58.2 52.3L-58.5 51.6L-58.3 51.0L-58.6 50.4L-58.7 48.7L-58.4 47.7L-57.6 46.9L-58.8 46.6L-58.0 45.8L-57.8 44.1L-56.9 44.5L-56.5 42.4L-57.0 42.1L-57.3 43.4L-57.8 43.2L-57.5 41.8L-57.2 39.9L-56.9 39.3L-57.1 38.3L-57.2 37.2L-56.8 37.1L-56.4 35.5L-55.8 33.9L-55.5 32.4L-55.7 30.9L-55.5 30.1L-55.5 28.9L-55.1 27.6L-55.0 25.7L-54.7 23.6L-54.5 21.4L-54.5 19.8L-54.7 18.3L-55.5 17.8L-55.5 17.4L-57.1 16.4L-58.5 15.3L-59.1 14.6L-59.4 13.8L-59.3 13.5L-59.9 12.2L-60.7 10.4L-61.4 8.4L-61.7 7.9L-62.0 7.2L-62.6 6.5L-63.1 6.1L-62.9 5.7L-63.3 4.7L-63.0 4.0L-62.4 3.4L-62.0 2.7L-62.2 2.2L-62.4 2.7L-62.9 2.2L-62.8 2.0L-62.9 1.1L-62.6 0.9L-62.5 0.3L-62.2 -0.4L-62.2 -0.8L-61.8 -1.0L-61.3 -1.4L-61.4 -1.7L-61.1 -1.8L-61.1 -2.3L-60.9 -2.6L-60.6 -2.7L-60.2 -3.3L-59.9 -3.8L-60.2 -4.1L-60.1 -4.7L-60.2 -5.6L-60.1 -5.8L-60.2 -6.7L-60.5 -7.2L-60.8 -7.5L-60.9 -8.1L-60.7 -8.3L-60.9 -8.4L-61.1 -8.7L-61.5 -9.0L-61.8 -8.9L-62.0 -8.6L-62.3 -8.3L-62.5 -8.3L-62.5 -8.1L-62.2 -7.5L-62.4 -7.4L-62.5 -7.3L-62.8 -7.2L-63.0 -7.8L-63.1 -7.6L-63.3 -7.7L-63.5 -8.1L-63.8 -8.2L-64.0 -8.3L-64.4 -8.3L-64.4 -8.1L-64.5 -8.2L-64.9 -8.4L-65.0 -8.7L-65.0 -8.8L-65.0 -9.1L-65.2 -9.3L-65.5 -9.5L-65.8 -9.6L-65.8 -9.9L-66.0 -10.1L-66.0 -9.8L-66.1 -9.6L-66.3 -9.8L-66.6 -9.9L-66.7 -10.1L-66.7 -10.4L-66.6 -10.8L-66.8 -10.9L-66.6 -11.1L-66.9 -11.4L-67.2 -11.8L-67.4 -12.1L-67.7 -12.5L-68.1 -12.9L-68.0 -13.1L-67.9 -12.9L-67.8 -13.0L-68.0 -13.3L-68.2 -13.4L-68.3 -13.1L-68.8 -13.2L-69.0 -13.3L-69.4 -13.5L-69.8 -13.5L-70.0 -13.7L-70.4 -13.9L-70.9 -13.9L-71.2 -14.1L-71.7 -14.5L-72.5 -15.6L-72.9 -15.9L-73.6 -16.2L-74.0 -16.1L-74.6 -15.8L-75.0 -15.7L-75.6 -15.9L-76.2 -16.1L-76.9 -16.6L-77.5 -16.7L-78.3 -17.2L-79.0 -17.6L-79.2 -17.9L-79.6 -18.0L-80.4 -18.3L-80.7 -18.7L-81.6 -19.3L-82.0 -19.9L-82.2 -20.4L-81.9 -20.5L-82.0 -20.8L-81.8 -21.1L-81.8 -21.4L-82.1 -21.9L-82.1 -22.3L-82.4 -22.8L-83.1 -23.8L-83.9 -24.5L-84.2 -25.2L-84.9 -25.6L-85.0 -25.8L-84.9 -26.4L-85.3 -26.7L-85.8 -27.2L-86.0 -27.9L-86.4 -27.9L-86.8 -28.5L-87.2 -29.0L-87.2 -29.3L-87.7 -30.0L-87.9 -30.8L-87.9 -31.2L-88.5 -31.6L-88.7 -31.5L-89.2 -31.8L-89.3 -31.4L-89.2 -30.9L-89.1 -30.2L-88.8 -29.8L-88.3 -29.1L-88.1 -28.8L-88.0 -28.8L-87.9 -28.4L-87.8 -28.4L-87.6 -27.8L-87.4 -27.5L-87.2 -27.2L-86.7 -26.7L-86.5 -25.7L-86.2 -25.3L-86.0 -24.8L-86.0 -24.3L-85.6 -24.3L-85.3 -23.8L-85.0 -23.4L-85.0 -23.2L-85.4 -22.8L-85.5 -22.8L-85.7 -23.4L-86.2 -24.0L-86.8 -24.5L-87.2 -24.7L-87.1 -25.5L-87.3 -26.0L-87.6 -26.3L-88.2 -26.8L-88.3 -26.6L-88.5 -26.9L-88.9 -27.1L-89.4 -27.7L-89.3 -27.8L-89.0 -27.7L-88.7 -28.1L-88.7 -28.6L-89.3 -29.3L-89.8 -29.6L-90.0 -30.2L-90.3 -30.8L-90.7 -31.6L-91.0 -32.5L-91.1 -33.0L-91.6 -33.6L-92.0 -33.7L-92.1 -34.0L-92.5 -34.1L-92.8 -34.3L-93.5 -34.4L-93.7 -34.6L-93.8 -35.2L-94.6 -36.2L-95.2 -37.6L-95.2 -37.8L-95.5 -38.1L-96.1 -39.0L-96.2 -39.8L-96.7 -40.3L-96.5 -41.1L-96.5 -42.0L-96.8 -42.8L-96.5 -43.7L-96.3 -45.5L-96.4 -46.9L-96.7 -47.7L-96.9 -48.2L-96.8 -48.4L-95.7 -48.0L-95.2 -47.1L-95.1 -47.4L-95.2 -48.2L-95.4 -49.0L-95.6 -49.0L-97.1 -50.0L-97.6 -50.4L-99.0 -50.8L-99.5 -51.7L-99.3 -52.3L-100.3 -52.8L-100.5 -53.6L-101.4 -54.3L-101.4 -54.8L-101.9 -55.2L-102.5 -55.5L-102.8 -56.4L-103.8 -57.2L-104.2 -58.1L-104.9 -58.2L-106.2 -58.2L-107.1 -58.5L-108.7 -59.5L-109.4 -59.7L-110.8 -60.1L-111.9 -60.0L-113.4 -60.5L-114.3 -60.9L-115.2 -60.7L-115.0 -60.0L-115.4 -59.9L-116.3 -59.7L-117.0 -59.4L-117.9 -59.2L-118.0 -59.7L-117.6 -60.7L-116.8 -61.0L-117.0 -61.3L-118.0 -60.7L-118.6 -60.1L-119.7 -59.4L-119.1 -58.9L-119.8 -58.1L-120.7 -57.7L-121.5 -57.4L-121.6 -57.0L-122.9 -56.5L-123.1 -56.0L-124.0 -55.6L-124.5 -55.6L-125.3 -55.4L-126.1 -55.0L-126.7 -54.7L-128.0 -54.4L-128.2 -54.6L-127.3 -55.0L-126.6 -55.3L-125.7 -55.9L-124.8 -56.0L-124.4 -56.4L-123.3 -57.0L-123.1 -57.2L-122.6 -57.6L-122.4 -58.3L-122.0 -58.9L-122.9 -58.6L-123.2 -58.8L-123.6 -58.4L-124.1 -58.9L-124.3 -58.6L-124.6 -59.1L-125.4 -58.7L-125.8 -58.7L-125.9 -59.3L-125.8 -59.6L-126.3 -60.0L-127.3 -59.8L-127.9 -60.3L-128.5 -60.5L-128.5 -61.1L-129.1 -61.5L-128.8 -62.1L-128.1 -62.6L-127.9 -63.1L-127.2 -63.2L-126.7 -63.1L-126.1 -63.5L-125.5 -63.5L-124.9 -63.8L-125.1 -64.2L-125.5 -64.4L-124.9 -64.8L-125.4 -64.8L-126.2 -64.6L-126.5 -64.3L-127.1 -64.6L-128.2 -64.4L-129.3 -64.7L-129.6 -65.1L-130.6 -65.7L-129.5 -66.1L-127.8 -66.6L-127.2 -66.6L-127.3 -66.1L-125.6 -66.1L-126.3 -66.7L-127.2 -67.1L-127.8 -67.6L-128.5 -68.0L-129.6 -68.4L-129.1 -68.9L-127.8 -68.9L-126.8 -69.4L-126.6 -69.9L-125.8 -70.3L-125.0 -70.4L-123.6 -70.9L-122.9 -70.8L-121.7 -71.4L-120.5 -71.1L-119.9 -70.7L-119.6 -70.9L-118.3 -70.8L-118.3 -70.6L-117.1 -70.4L-116.3 -70.5L-114.7 -70.2L-113.2 -70.1L-112.6 -70.0L-111.6 -70.2L-110.4 -69.9L-109.5 -69.7L-108.1 -69.5L-106.9 -69.0L-106.1 -68.9L-105.4 -69.3L-104.4 -69.6L-103.3 -69.5L-102.1 -69.9L-100.8 -70.2L-100.3 -69.8L-99.7 -70.0L-99.6 -70.5L-99.0 -70.4L-97.7 -69.5L-96.7 -70.2L-96.6 -69.4L-95.6 -69.6L-95.3 -69.9L-94.4 -69.8L-93.2 -69.4L-91.4 -69.0L-90.3 -68.8L-89.5 -68.9L-88.5 -68.4L-89.6 -67.9L-88.2 -67.7L-86.1 -67.8L-85.4 -68.0L-84.6 -67.4L-83.8 -67.9L-84.5 -68.3L-84.0 -68.7L-83.1 -68.7L-82.5 -68.8L-81.9 -68.6L-81.1 -68.0L-80.2 -68.1L-78.8 -67.6L-77.6 -67.8L-76.5 -67.8L-76.6 -68.4L-75.9 -68.6L-74.7 -68.2L-74.7 -67.3L-74.2 -68.1L-73.6 -68.1L-73.2 -69.1L-74.1 -69.7L-75.0 -70.1L-74.9 -71.2L-74.0 -71.9L-73.0 -71.8L-72.2 -71.3L-71.1 -70.2L-71.8 -69.7L-70.4 -69.5ZM-88.7 -73.1L-89.1 -72.7L-87.4 -73.0L-86.3 -72.5L-85.4 -73.0L-84.7 -72.6L-84.1 -71.7L-83.7 -72.1L-84.2 -73.1L-83.5 -73.2L-82.8 -73.1L-81.9 -72.7L-81.4 -71.7L-81.2 -71.0L-79.9 -70.5L-78.5 -70.0L-78.5 -69.6L-79.8 -69.5L-79.3 -69.1L-79.6 -68.8L-81.0 -68.9L-82.3 -69.2L-83.2 -69.1L-84.7 -68.8L-87.0 -68.6L-88.0 -68.5L-88.5 -69.0L-89.5 -69.3L-90.2 -69.2L-91.2 -70.0L-90.7 -70.1L-89.5 -70.2L-88.4 -70.2L-87.3 -70.4L-88.8 -70.6L-90.5 -70.5L-91.6 -70.5L-92.0 -70.9L-90.2 -71.3L-91.4 -71.3L-92.8 -71.6L-92.1 -72.3L-91.6 -72.7L-89.5 -73.3L-88.7 -73.1ZM-81.2 -73.4L-81.9 -72.8L-83.1 -73.5L-82.8 -73.6L-81.8 -73.6L-81.2 -73.4ZM-59.3 -73.1L-59.2 -72.8L-60.1 -72.9L-60.9 -72.9L-61.8 -72.7L-62.0 -72.8L-62.8 -73.3L-62.8 -73.7L-62.4 -73.8L-60.7 -73.7L-59.3 -73.1ZM-67.3 -73.2L-66.6 -72.5L-65.9 -73.3L-64.0 -73.8L-62.6 -72.7L-62.7 -72.1L-61.2 -72.4L-60.5 -72.8L-58.7 -72.2L-57.7 -71.8L-57.6 -71.3L-56.1 -71.6L-55.3 -70.9L-53.4 -70.5L-52.8 -70.1L-52.0 -69.2L-53.5 -68.7L-51.6 -68.1L-50.4 -67.8L-49.3 -66.9L-48.1 -66.9L-48.3 -66.2L-49.7 -65.0L-50.6 -65.4L-51.8 -66.4L-52.8 -66.3L-52.9 -65.7L-52.1 -65.1L-51.1 -64.6L-50.8 -64.4L-50.2 -63.4L-50.5 -62.7L-51.5 -62.9L-53.4 -63.7L-52.3 -62.9L-51.5 -62.3L-51.4 -61.9L-53.5 -62.3L-55.2 -62.9L-56.1 -63.4L-55.9 -63.7L-57.0 -64.2L-58.1 -64.7L-58.1 -64.4L-60.4 -64.2L-61.0 -64.6L-60.5 -65.3L-59.1 -65.3L-57.5 -65.5L-57.7 -65.8L-57.5 -66.3L-56.4 -67.3L-56.7 -67.7L-57.0 -68.1L-58.2 -68.6L-59.7 -68.9L-59.2 -69.1L-60.1 -69.8L-60.7 -69.8L-61.4 -70.2L-61.8 -69.9L-63.2 -69.7L-66.0 -70.0L-67.6 -70.3L-68.9 -70.4L-69.6 -70.8L-68.7 -71.2L-69.8 -71.2L-70.1 -72.2L-69.5 -73.1L-68.7 -73.5L-66.7 -73.8L-67.3 -73.2ZM-78.0 -73.8L-77.1 -73.6L-75.7 -73.8L-75.5 -73.5L-76.2 -73.0L-75.0 -72.6L-75.2 -71.7L-76.4 -71.3L-77.2 -71.4L-77.7 -71.7L-79.6 -72.5L-79.6 -72.8L-78.0 -72.7L-78.9 -73.4L-78.0 -73.8ZM111.6 -73.2L110.4 -73.2L108.8 -73.3L108.7 -73.4L109.4 -73.8L110.4 -73.9L111.5 -73.5L111.6 -73.2ZM-72.4 -72.8L-73.2 -72.0L-74.1 -72.1L-74.6 -72.9L-74.6 -73.4L-74.2 -73.9L-73.4 -74.1L-71.8 -74.1L-70.3 -73.9L-71.5 -73.0L-72.4 -72.8ZM-93.6 -71.4L-95.6 -70.9L-96.1 -71.3L-97.8 -71.9L-97.6 -72.2L-97.0 -73.0L-96.3 -73.7L-97.1 -74.3L-94.4 -74.4L-93.3 -74.2L-91.3 -74.2L-90.6 -73.9L-89.8 -73.5L-90.7 -73.2L-92.6 -72.5L-93.6 -71.8L-93.6 -71.4ZM117.1 -75.1L116.2 -74.7L115.0 -74.8L113.5 -75.2L113.7 -75.5L115.2 -75.3L117.1 -75.1ZM-72.7 -75.0L-73.2 -74.6L-74.3 -74.7L-75.2 -74.9L-74.8 -75.4L-73.7 -75.6L-73.0 -75.3L-72.7 -75.0ZM112.7 -75.6L112.1 -74.8L109.3 -74.8L108.0 -74.6L106.4 -75.3L106.8 -75.9L107.9 -76.1L109.9 -76.1L112.7 -75.6ZM-76.5 -76.7L-75.9 -76.3L-75.9 -75.7L-76.3 -75.0L-77.6 -74.9L-78.4 -75.1L-78.4 -75.6L-79.6 -75.6L-79.7 -76.3L-78.9 -76.3L-77.7 -76.6L-76.6 -76.6L-76.5 -76.7ZM-84.1 -76.2L-83.8 -75.8L-83.1 -76.0L-82.3 -76.0L-82.1 -75.5L-82.6 -75.0L-85.2 -74.9L-87.2 -74.4L-88.4 -74.4L-88.5 -74.7L-86.9 -75.2L-90.4 -75.0L-91.5 -75.2L-90.4 -76.2L-89.7 -76.5L-87.5 -76.1L-86.1 -75.5L-84.7 -75.5L-85.9 -76.4L-85.1 -76.8L-84.3 -76.7L-84.1 -76.2ZM44.7 -70.7L44.2 -70.6L41.7 -70.8L41.5 -71.2L40.1 -71.5L40.0 -72.0L40.8 -72.2L40.7 -72.8L42.3 -73.6L41.6 -73.8L43.4 -74.6L43.2 -75.1L45.0 -75.6L47.5 -76.3L50.1 -76.4L51.4 -76.8L53.0 -76.9L53.5 -76.5L53.0 -76.2L50.2 -75.7L47.9 -75.3L45.4 -74.3L44.3 -73.3L43.1 -72.4L43.2 -71.5L44.7 -70.7ZM-73.6 -77.1L-72.7 -76.8L-71.2 -76.8L-70.5 -76.5L-70.7 -76.1L-69.8 -75.8L-69.3 -75.6L-68.3 -75.6L-67.1 -75.5L-65.9 -75.7L-64.3 -75.8L-63.0 -75.7L-62.2 -75.3L-62.0 -74.9L-62.5 -74.7L-63.7 -74.4L-64.7 -74.6L-66.9 -74.4L-68.5 -74.4L-69.7 -74.5L-71.8 -74.8L-72.1 -75.4L-72.2 -75.9L-73.0 -76.3L-74.6 -76.4L-75.5 -76.8L-75.2 -77.2L-73.6 -77.1ZM-90.3 -77.6L-90.4 -76.9L-91.0 -76.5L-91.7 -76.5L-93.2 -76.1L-94.4 -75.9L-95.5 -76.1L-94.1 -76.9L-92.5 -77.5L-91.4 -77.5L-90.3 -77.6ZM-72.9 -77.5L-73.3 -77.5L-74.7 -77.6L-74.9 -77.8L-73.4 -77.8L-72.8 -77.6L-72.9 -77.5ZM-85.6 -77.7L-87.1 -77.4L-88.2 -77.7L-87.6 -78.1L-86.5 -78.2L-85.4 -78.0L-85.6 -77.7ZM19.2 -77.9L17.5 -77.4L16.1 -77.7L16.6 -77.9L16.2 -78.3L17.8 -78.5L18.1 -78.1L19.2 -77.9ZM-85.2 -78.6L-86.2 -78.4L-87.4 -78.4L-87.4 -78.6L-86.6 -78.9L-86.2 -78.8L-85.2 -78.6ZM-74.5 -78.1L-75.6 -77.8L-76.2 -78.1L-76.6 -78.5L-76.6 -78.9L-75.6 -78.8L-75.2 -78.8L-74.2 -78.4L-74.5 -78.1ZM-77.7 -78.3L-77.4 -77.9L-78.7 -78.0L-80.0 -78.3L-81.7 -78.4L-81.0 -78.7L-81.9 -78.9L-82.0 -79.3L-80.4 -79.2L-78.3 -78.8L-77.7 -78.3ZM81.6 -78.3L77.3 -77.9L78.7 -79.2L79.3 -79.3L79.9 -79.3L81.9 -78.7L81.6 -78.3ZM14.2 -79.7L16.7 -79.0L14.8 -78.6L14.4 -77.8L13.7 -77.6L13.3 -76.8L12.4 -76.8L10.7 -77.4L11.4 -77.7L10.2 -78.0L8.7 -78.9L8.1 -79.7L10.2 -80.0L10.7 -79.7L11.8 -79.7L12.1 -80.0L13.2 -80.1L14.2 -79.7ZM19.8 -80.4L21.3 -80.1L20.1 -79.5L17.9 -79.4L15.6 -79.6L15.5 -79.8L14.3 -79.9L13.5 -80.3L15.9 -80.6L17.0 -80.4L17.8 -80.7L19.8 -80.4ZM39.7 -80.5L38.7 -80.4L38.0 -80.3L37.9 -80.2L37.0 -80.0L36.1 -80.2L36.6 -80.6L34.8 -80.6L36.4 -80.8L37.5 -80.8L37.7 -80.5L38.1 -80.8L38.9 -80.9L40.0 -80.7L39.7 -80.5ZM77.7 -78.9L76.0 -78.8L73.8 -79.0L72.5 -79.4L71.9 -80.1L70.8 -80.3L72.9 -81.0L74.5 -81.3L76.1 -80.7L77.8 -79.8L77.7 -78.9ZM-67.6 -79.7L-66.7 -79.3L-67.7 -79.0L-69.2 -78.3L-70.6 -78.2L-72.2 -78.3L-73.0 -78.8L-73.0 -79.1L-72.4 -79.4L-73.8 -79.4L-74.7 -79.7L-75.1 -80.2L-74.6 -80.6L-74.1 -80.9L-73.3 -81.0L-73.6 -81.2L-71.8 -81.3L-70.8 -80.7L-69.5 -80.5L-68.2 -80.3L-67.6 -79.7ZM-53.2 -83.1L-51.1 -83.0L-49.5 -82.9L-48.1 -82.6L-48.1 -82.4L-50.0 -81.9L-51.9 -81.7L-52.6 -81.5L-50.9 -81.5L-52.7 -80.9L-54.0 -80.6L-55.3 -79.8L-56.9 -79.6L-57.4 -79.4L-59.8 -79.3L-58.7 -79.2L-59.2 -79.0L-58.6 -78.5L-59.3 -78.2L-60.5 -77.9L-60.9 -77.5L-62.0 -77.2L-61.9 -77.0L-60.5 -77.0L-60.5 -76.8L-62.6 -76.2L-64.6 -76.5L-66.9 -76.3L-68.1 -76.4L-69.5 -76.5L-69.6 -77.0L-68.2 -77.2L-68.6 -77.9L-68.1 -78.0L-66.0 -77.5L-67.1 -78.2L-68.3 -78.4L-67.7 -78.8L-66.3 -79.0L-66.1 -79.3L-67.2 -79.7L-67.5 -80.3L-65.4 -80.2L-64.8 -80.1L-63.6 -80.5L-65.3 -80.6L-68.1 -80.5L-69.4 -80.9L-70.1 -81.3L-71.0 -81.6L-71.2 -81.9L-70.0 -82.1L-69.1 -82.1L-67.6 -82.3L-66.4 -82.7L-65.5 -82.6L-64.6 -82.3L-64.0 -82.9L-63.0 -83.0L-61.6 -83.1L-59.2 -83.2L-58.8 -83.1L-56.6 -83.2L-54.9 -83.2L-53.2 -83.1ZM-21.1 -83.5L-16.2 -82.7L-17.6 -82.3L-20.6 -82.3L-24.8 -82.2L-24.4 -82.0L-21.6 -82.1L-19.3 -81.8L-17.8 -82.1L-17.1 -81.7L-18.0 -81.2L-16.0 -81.5L-12.3 -81.9L-9.9 -81.7L-9.5 -81.3L-12.7 -80.6L-13.1 -80.3L-15.6 -80.2L-13.8 -80.1L-14.7 -79.4L-15.3 -78.8L-15.3 -77.6L-14.4 -77.0L-15.6 -76.9L-16.8 -76.6L-15.4 -76.1L-15.2 -75.2L-16.1 -75.2L-15.1 -74.3L-16.8 -74.2L-15.9 -73.8L-16.1 -73.5L-17.2 -73.3L-18.3 -73.3L-17.3 -72.6L-17.3 -72.2L-18.9 -72.6L-19.3 -72.3L-18.2 -72.1L-17.2 -71.5L-16.9 -70.7L-18.3 -70.5L-18.9 -70.9L-19.8 -71.4L-19.6 -70.8L-20.5 -70.2L-18.4 -70.2L-17.4 -70.1L-19.4 -69.3L-21.6 -68.5L-23.8 -68.1L-24.7 -68.1L-25.5 -67.7L-26.6 -66.7L-28.2 -66.0L-28.8 -65.9L-29.8 -65.7L-30.9 -65.5L-31.6 -64.8L-31.6 -64.1L-32.0 -63.5L-33.3 -62.7L-33.0 -61.9L-33.3 -61.1L-33.7 -60.1L-34.8 -60.0L-35.9 -60.9L-37.5 -60.9L-38.3 -61.4L-38.8 -62.4L-40.1 -63.6L-40.5 -64.3L-40.6 -65.2L-41.7 -66.1L-41.4 -66.8L-41.9 -67.2L-41.2 -68.4L-40.0 -68.7L-39.7 -69.1L-39.5 -69.9L-40.4 -69.6L-40.8 -69.4L-41.5 -69.3L-42.5 -69.6L-42.5 -70.3L-42.2 -70.8L-41.5 -70.8L-39.9 -70.6L-41.3 -71.2L-42.0 -71.5L-42.7 -71.4L-43.4 -71.7L-42.5 -72.6L-43.0 -73.0L-43.6 -73.7L-44.5 -74.7L-45.5 -75.1L-45.5 -75.5L-47.6 -76.1L-49.3 -76.2L-51.3 -76.1L-53.2 -76.1L-54.1 -76.4L-55.5 -77.0L-53.4 -77.3L-51.9 -77.4L-55.2 -77.6L-57.0 -78.0L-56.8 -78.4L-53.9 -78.9L-51.1 -79.4L-50.8 -79.8L-52.9 -80.1L-52.2 -80.5L-49.5 -81.2L-48.4 -81.3L-48.7 -81.8L-46.8 -82.0L-44.4 -82.2L-42.1 -82.2L-41.2 -81.9L-39.2 -82.4L-37.3 -82.1L-36.2 -82.0L-34.6 -81.7L-36.4 -82.2L-36.3 -82.6L-33.7 -83.2L-31.0 -83.2L-30.0 -83.5L-27.3 -83.6L-21.1 -83.5Z", NEAR = "M27.89 -35.92L27.95 -35.91L28.07 -35.83L28.09 -35.83L28.13 -35.94L28.17 -35.97L28.24 -36.00L28.26 -36.17L28.30 -36.20L28.34 -36.22L28.41 -36.22L28.47 -36.23L28.47 -36.26L28.39 -36.46L28.40 -36.51L28.44 -36.70L28.46 -36.78L28.48 -36.80L28.58 -36.79L28.70 -36.76L28.74 -36.70L28.80 -36.65L28.89 -36.66L29.00 -36.65L29.09 -36.64L29.16 -36.68L29.31 -36.74L29.38 -36.77L29.45 -36.80L29.67 -36.90L29.76 -36.89L29.83 -36.88L29.87 -36.86L29.98 -36.79L30.06 -36.72L30.12 -36.69L30.23 -36.69L30.39 -36.68L30.58 -36.68L30.69 -36.70L30.84 -36.74L31.09 -36.83L31.43 -37.01L31.63 -37.10L31.71 -37.11L31.83 -37.11L31.94 -37.09L32.06 -37.07L32.12 -37.07L32.26 -37.09L32.44 -37.13L32.55 -37.16L32.68 -37.21L32.77 -37.29L32.79 -37.30L32.83 -37.28L32.84 -37.28L32.88 -37.23L32.91 -37.11L32.91 -37.10L32.91 -37.06L32.82 -36.96L32.70 -36.83L32.61 -36.74L32.47 -36.60L32.36 -36.57L32.18 -36.51L32.13 -36.46L32.09 -36.38L32.06 -36.27L32.05 -36.20L32.05 -36.07L32.09 -35.94L32.13 -35.81L32.14 -35.72L32.13 -35.64L32.09 -35.55L32.05 -35.43L32.02 -35.29L32.01 -35.03L32.01 -34.81L32.01 -34.77L31.93 -34.61L31.85 -34.43L31.81 -34.39L31.62 -34.33L31.41 -34.20L31.17 -34.05L30.96 -33.91L30.74 -33.77L30.51 -33.62L30.35 -33.51L30.13 -33.37L29.93 -33.24L29.72 -33.10L29.57 -33.00L29.34 -32.83L29.20 -32.73L28.99 -32.59L28.82 -32.47L28.61 -32.32L28.35 -32.36L28.26 -32.39L28.19 -32.46L28.14 -32.50L28.02 -32.53L27.94 -32.67L27.89 -32.71L27.81 -32.73L27.82 -32.78L27.86 -32.86L27.90 -32.95L27.88 -33.00L27.87 -33.04L27.87 -33.09L27.90 -33.14L27.88 -33.19L27.86 -33.25L27.85 -33.28L27.85 -33.33L27.86 -33.37L27.87 -33.43L27.91 -33.47L27.91 -33.50L27.95 -33.54L27.99 -33.56L28.00 -33.59L27.99 -33.60L27.95 -33.62L27.93 -33.67L27.95 -33.73L27.96 -33.75L27.99 -33.78L28.04 -33.83L28.09 -33.84L28.13 -33.84L28.19 -33.84L28.24 -33.83L28.26 -33.84L28.25 -33.85L28.19 -33.89L28.19 -33.93L28.20 -33.96L28.25 -34.01L28.30 -34.05L28.33 -34.06L28.39 -34.13L28.43 -34.22L28.37 -34.43L28.33 -34.47L28.26 -34.50L28.23 -34.50L28.23 -34.51L28.27 -34.57L28.31 -34.61L28.27 -34.66L28.20 -34.68L28.18 -34.63L28.09 -34.63L27.95 -34.63L27.89 -34.85L27.88 -34.95L27.89 -35.06L27.93 -35.22L27.91 -35.30L27.91 -35.35L27.90 -35.42L27.79 -35.57L27.85 -35.85L27.89 -35.92ZM21.92 -45.45L22.00 -45.35L22.11 -45.29L22.35 -45.23L22.37 -45.24L22.37 -45.25L22.35 -45.27L22.35 -45.29L22.36 -45.31L22.40 -45.31L22.45 -45.29L22.56 -45.32L22.71 -45.40L22.85 -45.42L22.98 -45.37L23.04 -45.31L23.08 -45.26L23.07 -45.19L23.06 -45.15L23.03 -44.98L23.00 -44.92L22.97 -44.84L22.57 -44.76L22.59 -44.80L22.59 -44.87L22.57 -44.92L22.61 -44.98L22.52 -44.99L22.48 -44.97L22.45 -44.92L22.47 -44.81L22.43 -44.75L22.42 -44.72L22.41 -44.64L22.39 -44.60L22.38 -44.57L22.45 -44.57L22.42 -44.51L22.30 -44.37L22.26 -44.30L22.27 -43.98L22.21 -43.80L22.21 -43.74L22.09 -43.74L22.05 -43.74L21.93 -43.77L21.79 -43.82L21.72 -43.92L21.67 -43.99L21.55 -43.96L21.53 -43.96L21.50 -44.00L21.41 -44.02L21.31 -44.02L21.07 -44.15L21.05 -44.17L20.86 -44.15L20.58 -44.08L20.37 -44.01L20.15 -43.87L20.06 -43.77L19.96 -43.71L19.81 -43.67L19.55 -43.69L19.28 -43.74L18.98 -43.79L18.82 -43.76L18.61 -43.79L18.29 -43.85L18.05 -43.87L17.81 -43.83L17.77 -43.86L17.76 -43.90L17.77 -43.95L17.80 -43.99L17.86 -44.02L17.89 -44.05L17.89 -44.08L17.83 -44.13L17.70 -44.20L17.64 -44.24L17.63 -44.25L17.62 -44.29L17.60 -44.32L17.55 -44.34L17.51 -44.38L17.48 -44.44L17.48 -44.49L17.52 -44.54L17.58 -44.56L17.64 -44.56L17.67 -44.57L17.65 -44.61L17.59 -44.65L17.48 -44.71L17.37 -44.68L17.25 -44.56L17.17 -44.54L17.11 -44.62L17.02 -44.67L16.89 -44.68L16.81 -44.71L16.78 -44.75L16.72 -44.79L16.60 -44.83L16.59 -44.86L16.62 -44.87L16.66 -44.87L16.72 -44.88L16.73 -44.90L16.73 -44.92L16.68 -44.94L16.64 -44.96L16.61 -44.97L16.59 -44.99L16.59 -45.01L16.61 -45.02L16.63 -45.02L16.64 -45.03L16.65 -45.08L16.68 -45.11L16.70 -45.12L16.70 -45.15L16.68 -45.17L16.65 -45.19L16.61 -45.20L16.49 -45.24L16.43 -45.29L16.40 -45.29L16.33 -45.32L16.27 -45.37L16.22 -45.43L16.16 -45.47L16.14 -45.48L16.14 -45.50L16.15 -45.52L16.15 -45.54L16.14 -45.60L16.14 -45.66L16.14 -45.72L16.14 -45.75L16.13 -45.76L16.12 -45.75L16.11 -45.74L16.09 -45.74L16.05 -45.78L15.99 -45.87L15.95 -45.90L15.88 -45.94L15.82 -45.98L15.77 -46.05L15.73 -46.11L15.76 -46.13L15.93 -46.17L16.02 -46.13L16.05 -46.15L16.09 -46.17L16.11 -46.19L16.11 -46.22L16.13 -46.25L16.19 -46.26L16.35 -46.24L16.41 -46.28L16.44 -46.31L16.45 -46.35L16.47 -46.39L16.52 -46.41L16.52 -46.45L16.51 -46.49L16.55 -46.57L16.57 -46.61L16.60 -46.62L16.64 -46.65L16.70 -46.70L16.69 -46.75L16.70 -46.79L16.77 -46.88L16.82 -46.96L16.82 -47.01L16.83 -47.04L16.88 -47.08L16.93 -47.14L16.99 -47.30L17.02 -47.33L17.06 -47.36L17.09 -47.40L17.09 -47.50L17.12 -47.54L17.18 -47.57L17.24 -47.63L17.29 -47.70L17.32 -47.73L17.37 -47.74L17.42 -47.76L17.48 -47.77L17.53 -47.76L17.57 -47.77L17.62 -47.80L17.76 -47.92L17.77 -47.95L17.80 -47.96L17.91 -48.01L17.94 -48.05L17.98 -48.09L18.03 -48.08L18.19 -47.99L18.36 -48.00L18.39 -47.99L18.40 -47.99L18.42 -47.98L18.65 -47.94L18.68 -47.94L18.70 -47.95L18.78 -47.91L18.87 -47.91L18.94 -47.94L19.03 -47.95L19.10 -47.93L19.15 -47.88L19.30 -47.76L19.34 -47.72L19.41 -47.72L19.48 -47.75L19.56 -47.82L19.79 -47.91L19.96 -47.93L20.13 -47.97L20.33 -47.99L20.38 -48.06L20.42 -48.11L20.44 -48.20L20.55 -48.23L20.65 -48.25L20.68 -48.26L20.76 -48.26L20.81 -48.26L20.90 -48.21L20.96 -48.16L20.99 -48.11L21.04 -48.05L21.10 -47.96L21.16 -47.84L21.17 -47.78L21.20 -47.72L21.24 -47.64L21.33 -47.55L21.34 -47.54L21.38 -47.48L21.46 -47.34L21.52 -47.29L21.58 -47.23L21.60 -47.17L21.64 -47.11L21.74 -47.04L21.81 -46.98L21.87 -46.79L21.91 -46.71L21.94 -46.64L21.93 -46.51L21.95 -46.45L21.91 -46.35L21.85 -46.14L21.83 -45.97L21.84 -45.88L21.84 -45.83L21.86 -45.79L21.88 -45.71L21.88 -45.65L21.86 -45.63L21.83 -45.61L21.81 -45.60L21.84 -45.57L21.88 -45.51L21.92 -45.45ZM27.95 -34.63L28.09 -34.63L28.18 -34.63L28.20 -34.68L28.27 -34.66L28.31 -34.61L28.27 -34.57L28.23 -34.51L28.23 -34.50L28.26 -34.50L28.33 -34.47L28.37 -34.43L28.43 -34.22L28.39 -34.13L28.33 -34.06L28.30 -34.05L28.25 -34.01L28.20 -33.96L28.19 -33.93L28.19 -33.89L28.25 -33.85L28.26 -33.84L28.24 -33.83L28.19 -33.84L28.13 -33.84L28.09 -33.84L28.04 -33.83L27.99 -33.78L27.96 -33.75L27.95 -33.73L27.93 -33.67L27.95 -33.62L27.99 -33.60L28.00 -33.59L27.99 -33.56L27.95 -33.54L27.91 -33.50L27.91 -33.47L27.87 -33.43L27.85 -33.42L27.81 -33.37L27.77 -33.33L27.68 -33.27L27.66 -33.24L27.65 -33.27L27.61 -33.25L27.58 -33.12L27.51 -33.07L27.43 -33.08L27.37 -33.09L27.28 -33.08L27.32 -33.16L27.35 -33.26L27.39 -33.39L27.46 -33.50L27.59 -33.88L27.67 -34.03L27.70 -34.25L27.82 -34.44L27.91 -34.49L27.95 -34.55L27.95 -34.63ZM27.81 -32.73L27.89 -32.71L27.94 -32.67L28.02 -32.53L28.14 -32.50L28.19 -32.46L28.26 -32.39L28.35 -32.36L28.61 -32.32L28.82 -32.47L28.99 -32.59L29.20 -32.73L29.34 -32.83L29.57 -33.00L29.72 -33.10L29.93 -33.24L30.13 -33.37L30.18 -33.15L30.24 -32.93L30.29 -32.71L30.35 -32.49L30.29 -32.47L30.33 -32.31L30.41 -32.33L30.49 -32.35L30.53 -32.24L30.42 -32.13L30.30 -32.01L30.27 -32.00L30.12 -31.95L29.82 -31.85L29.61 -31.78L29.35 -31.70L29.13 -31.63L28.92 -31.56L28.72 -31.49L28.83 -31.35L29.01 -31.15L29.12 -31.01L29.26 -30.83L29.38 -30.67L29.51 -30.50L29.42 -30.44L29.27 -30.35L29.25 -30.33L29.24 -30.31L29.18 -30.14L29.13 -30.01L29.11 -30.00L28.91 -29.95L28.69 -29.90L28.56 -29.87L28.52 -29.83L28.43 -29.67L28.34 -29.50L28.19 -29.35L28.02 -29.20L27.98 -29.19L27.86 -29.21L27.66 -29.25L27.46 -29.29L27.32 -29.32L27.16 -29.35L27.18 -29.48L27.17 -29.55L27.21 -29.79L27.24 -29.90L27.25 -29.98L27.31 -30.14L27.30 -30.19L27.31 -30.38L27.31 -30.42L27.33 -30.52L27.38 -30.67L27.43 -30.80L27.45 -30.86L27.49 -30.98L27.54 -31.13L27.51 -31.21L27.51 -31.23L27.52 -31.33L27.55 -31.48L27.56 -31.56L27.58 -31.67L27.63 -31.77L27.61 -31.98L27.61 -32.10L27.64 -32.24L27.62 -32.40L27.64 -32.62L27.64 -32.64L27.66 -32.67L27.67 -32.68L27.77 -32.73L27.81 -32.73ZM27.87 -33.43L27.86 -33.37L27.85 -33.33L27.85 -33.28L27.86 -33.25L27.88 -33.19L27.90 -33.14L27.87 -33.09L27.87 -33.04L27.88 -33.00L27.90 -32.95L27.86 -32.86L27.82 -32.78L27.81 -32.73L27.77 -32.73L27.67 -32.68L27.66 -32.67L27.64 -32.64L27.64 -32.62L27.62 -32.40L27.57 -32.40L27.51 -32.45L27.50 -32.49L27.48 -32.51L27.43 -32.51L27.34 -32.54L27.25 -32.46L27.20 -32.34L27.19 -32.28L27.16 -32.16L27.17 -32.09L27.18 -31.99L27.19 -31.91L27.18 -31.87L27.16 -31.84L27.17 -31.82L27.18 -31.82L27.24 -31.84L27.29 -31.82L27.35 -31.78L27.35 -31.75L27.31 -31.73L27.22 -31.67L27.16 -31.60L27.14 -31.54L27.10 -31.40L27.10 -31.37L27.12 -31.35L27.27 -31.37L27.41 -31.42L27.51 -31.48L27.55 -31.48L27.52 -31.33L27.51 -31.23L27.51 -31.21L27.54 -31.13L27.49 -30.98L27.45 -30.86L27.43 -30.80L27.38 -30.67L27.33 -30.52L27.31 -30.42L27.31 -30.38L27.30 -30.19L27.31 -30.14L27.25 -29.98L27.24 -29.90L27.21 -29.79L27.17 -29.55L27.12 -29.48L27.09 -29.56L27.03 -29.81L26.99 -29.98L26.93 -30.19L26.83 -30.45L26.82 -30.51L26.80 -30.60L26.73 -30.83L26.67 -31.00L26.61 -31.21L26.69 -31.29L26.69 -31.36L26.83 -31.53L26.82 -31.54L26.79 -31.59L26.94 -31.90L27.04 -32.20L27.13 -32.61L27.20 -32.83L27.25 -32.97L27.28 -33.08L27.37 -33.09L27.43 -33.08L27.51 -33.07L27.58 -33.12L27.61 -33.25L27.65 -33.27L27.66 -33.24L27.68 -33.27L27.77 -33.33L27.81 -33.37L27.85 -33.42L27.87 -33.43ZM32.91 -37.11L32.99 -37.13L33.13 -37.25L33.21 -37.36L33.24 -37.37L33.31 -37.34L33.36 -37.32L33.48 -37.37L33.55 -37.35L33.62 -37.32L33.65 -37.31L33.81 -37.24L33.85 -37.24L33.94 -37.23L34.06 -37.22L34.14 -37.27L34.20 -37.31L34.24 -37.31L34.28 -37.30L34.31 -37.28L34.34 -37.25L34.35 -37.20L34.35 -37.05L34.36 -37.01L34.38 -36.98L34.41 -36.98L34.44 -37.01L34.50 -37.06L34.57 -37.11L34.63 -37.16L34.66 -37.18L34.71 -37.17L34.76 -37.16L34.78 -37.14L34.81 -37.06L34.87 -36.80L34.91 -36.77L34.95 -36.74L34.98 -36.70L34.99 -36.66L34.99 -36.60L34.99 -36.53L35.01 -36.47L35.03 -36.43L35.05 -36.41L35.09 -36.41L35.13 -36.40L35.15 -36.36L35.24 -36.05L35.25 -36.02L35.28 -36.00L35.34 -36.01L35.40 -35.98L35.47 -35.93L35.53 -35.84L35.57 -35.82L35.70 -35.84L35.87 -35.82L35.95 -35.77L35.95 -35.74L35.88 -35.71L35.77 -35.67L35.74 -35.61L35.72 -35.52L35.72 -35.48L35.75 -35.43L35.83 -35.32L35.83 -35.28L35.85 -35.23L35.86 -35.20L35.85 -35.13L35.78 -35.08L35.68 -35.03L35.49 -34.80L35.48 -34.75L35.48 -34.61L35.46 -34.57L35.40 -34.57L35.35 -34.58L35.35 -34.53L35.32 -34.47L35.31 -34.42L35.38 -34.28L35.39 -34.22L35.38 -34.15L35.31 -34.04L35.27 -33.97L35.28 -33.96L35.33 -33.93L35.49 -33.69L35.54 -33.60L35.60 -33.63L35.63 -33.62L35.65 -33.61L35.66 -33.58L35.66 -33.55L35.64 -33.49L35.73 -33.47L35.76 -33.42L35.86 -33.23L35.85 -33.17L35.81 -33.09L35.81 -33.03L35.81 -32.98L35.83 -32.96L35.97 -32.95L36.04 -32.93L36.18 -32.83L36.35 -32.69L36.49 -32.57L36.61 -32.47L36.74 -32.47L36.78 -32.46L36.81 -32.42L36.84 -32.34L36.92 -32.15L36.98 -32.09L37.07 -31.94L37.16 -31.79L37.10 -31.60L37.05 -31.40L37.05 -31.14L37.05 -31.00L37.17 -31.00L37.31 -30.99L37.31 -30.82L37.31 -30.66L37.31 -30.47L37.35 -30.46L37.41 -30.42L37.44 -30.35L37.47 -30.32L37.51 -30.32L37.55 -30.29L37.59 -30.23L37.61 -30.19L37.60 -30.16L37.60 -30.11L37.63 -30.04L37.67 -30.00L37.72 -29.96L37.65 -29.94L37.57 -29.96L37.41 -30.04L37.35 -30.04L37.28 -30.01L37.28 -29.98L37.10 -30.08L37.04 -30.10L37.02 -30.10L36.92 -30.10L36.78 -30.08L36.69 -30.04L36.63 -30.00L36.61 -29.96L36.60 -29.94L36.55 -29.82L36.50 -29.67L36.45 -29.54L36.34 -29.35L36.28 -29.26L36.16 -29.10L36.02 -29.06L35.70 -29.10L35.35 -29.13L35.00 -29.17L34.75 -29.19L34.72 -29.20L34.47 -29.43L34.26 -29.62L34.01 -29.85L33.75 -30.08L33.49 -30.32L33.30 -30.50L33.07 -30.72L32.86 -30.92L32.69 -31.08L32.48 -31.22L32.31 -31.33L32.07 -31.49L31.88 -31.62L31.71 -31.73L31.45 -31.89L31.37 -31.94L31.10 -32.00L30.85 -32.04L30.59 -32.09L30.42 -32.13L30.53 -32.24L30.49 -32.35L30.41 -32.33L30.33 -32.31L30.29 -32.47L30.35 -32.49L30.29 -32.71L30.24 -32.93L30.18 -33.15L30.13 -33.37L30.35 -33.51L30.51 -33.62L30.74 -33.77L30.96 -33.91L31.17 -34.05L31.41 -34.20L31.62 -34.33L31.81 -34.39L31.85 -34.43L31.93 -34.61L32.01 -34.77L32.01 -34.81L32.01 -35.03L32.02 -35.29L32.05 -35.43L32.09 -35.55L32.13 -35.64L32.14 -35.72L32.13 -35.81L32.09 -35.94L32.05 -36.07L32.05 -36.20L32.06 -36.27L32.09 -36.38L32.13 -36.46L32.18 -36.51L32.36 -36.57L32.47 -36.60L32.61 -36.74L32.70 -36.83L32.82 -36.96L32.91 -37.06L32.91 -37.10L32.91 -37.11ZM43.66 -26.92L43.59 -26.80L43.48 -26.70L43.43 -26.73L43.39 -26.73L43.32 -26.69L43.26 -26.69L43.16 -26.62L43.06 -26.58L43.00 -26.59L42.98 -26.59L42.96 -26.64L42.96 -26.66L43.01 -26.65L43.15 -26.71L43.33 -26.81L43.34 -26.86L43.32 -26.93L43.32 -26.95L43.44 -26.91L43.57 -26.98L43.68 -27.00L43.73 -26.95L43.66 -26.92ZM41.89 -37.34L42.11 -37.33L42.19 -37.35L42.32 -37.41L42.41 -37.44L42.45 -37.44L42.50 -37.47L42.54 -37.50L42.62 -37.72L42.66 -37.78L42.79 -37.90L42.91 -37.98L43.03 -38.05L43.19 -38.10L43.39 -38.10L43.55 -38.08L43.64 -38.08L43.69 -38.07L43.72 -38.08L43.74 -38.10L43.76 -38.19L43.80 -38.22L43.85 -38.25L43.93 -38.25L44.03 -38.26L44.11 -38.25L44.22 -38.21L44.35 -38.21L44.44 -38.22L44.49 -38.18L44.53 -38.13L44.55 -38.09L44.55 -38.03L44.55 -37.99L44.56 -37.97L44.62 -37.95L44.69 -37.93L44.84 -37.90L44.98 -37.86L45.05 -37.83L45.15 -37.78L45.27 -37.66L45.31 -37.65L45.37 -37.64L45.40 -37.64L45.49 -37.69L45.57 -37.65L45.61 -37.66L45.70 -37.68L45.79 -37.65L46.03 -37.52L46.05 -37.52L46.08 -37.51L46.10 -37.48L46.11 -37.44L46.13 -37.33L46.20 -37.25L46.28 -37.18L46.38 -37.14L46.58 -37.04L46.67 -36.96L46.76 -36.83L46.87 -36.65L46.89 -36.64L47.17 -36.64L47.49 -36.64L47.53 -36.57L47.52 -36.43L47.53 -36.29L47.56 -36.19L47.56 -36.10L47.54 -36.05L47.52 -36.00L47.52 -35.98L47.56 -35.94L47.59 -35.87L47.60 -35.76L47.58 -35.71L47.58 -35.66L47.60 -35.62L47.62 -35.55L47.61 -35.51L47.59 -35.47L47.57 -35.42L47.55 -35.36L47.54 -35.31L47.51 -35.29L47.48 -35.27L47.48 -35.21L47.50 -35.16L47.51 -35.09L47.49 -35.05L47.48 -35.00L47.45 -34.92L47.46 -34.86L47.43 -34.80L47.39 -34.75L47.36 -34.71L47.36 -34.65L47.33 -34.63L47.28 -34.59L47.24 -34.55L47.19 -34.55L47.19 -34.52L47.19 -34.49L47.21 -34.48L47.24 -34.42L47.31 -34.32L47.12 -34.31L47.06 -34.22L47.00 -34.09L47.03 -33.84L47.00 -33.71L47.02 -33.64L47.06 -33.59L47.13 -33.56L47.25 -33.56L47.32 -33.54L47.33 -33.51L47.29 -33.46L47.22 -33.36L47.18 -33.32L47.06 -33.14L47.06 -33.06L47.07 -33.00L47.12 -32.79L47.17 -32.60L47.26 -32.25L47.26 -32.17L47.23 -31.99L47.23 -31.88L47.24 -31.73L47.24 -31.66L47.26 -31.50L47.28 -31.48L47.48 -31.45L47.67 -31.42L47.91 -31.38L47.99 -31.29L48.03 -31.07L48.03 -30.91L48.01 -30.83L47.83 -30.60L47.65 -30.36L47.48 -30.13L47.27 -29.86L47.42 -29.66L47.52 -29.54L47.64 -29.37L47.66 -29.33L47.66 -29.26L47.79 -29.01L47.84 -28.87L47.88 -28.79L47.99 -28.67L48.09 -28.55L48.20 -28.49L48.28 -28.48L48.45 -28.42L48.51 -28.36L48.61 -28.23L48.73 -28.25L48.76 -28.25L48.76 -28.24L48.77 -28.20L48.75 -28.00L48.78 -27.80L48.80 -27.50L48.80 -27.45L48.77 -27.36L48.77 -27.30L48.76 -27.27L48.77 -27.25L48.80 -27.23L48.89 -27.22L49.08 -27.25L49.10 -27.24L49.15 -27.21L49.19 -27.15L49.19 -27.12L49.14 -27.08L49.13 -27.00L49.15 -26.88L49.14 -26.87L49.10 -26.84L49.08 -26.67L49.07 -26.65L49.02 -26.63L48.79 -26.64L48.76 -26.64L48.67 -26.59L48.52 -26.56L48.47 -26.54L48.42 -26.49L48.38 -26.43L48.37 -26.37L48.36 -26.36L48.27 -26.37L48.24 -26.32L48.07 -26.24L48.05 -26.23L48.03 -26.17L48.00 -26.00L47.98 -25.84L47.97 -25.82L47.92 -25.77L47.91 -25.75L47.92 -25.69L47.90 -25.58L47.88 -25.29L47.85 -25.20L47.81 -25.20L47.78 -25.15L47.72 -25.10L47.59 -25.14L47.48 -25.18L47.13 -25.28L47.10 -25.33L47.08 -25.41L47.02 -25.44L46.93 -25.31L46.64 -25.38L46.54 -25.36L46.48 -25.40L46.32 -25.40L46.20 -25.48L46.02 -25.43L45.88 -25.42L45.69 -25.55L45.48 -25.59L45.31 -25.58L45.22 -25.59L45.08 -25.64L45.02 -25.69L44.91 -25.65L44.86 -25.72L44.55 -25.79L44.49 -25.92L44.45 -26.04L44.45 -26.16L44.37 -26.37L44.35 -26.68L44.32 -26.80L44.28 -26.91L44.22 -26.99L44.14 -27.09L44.08 -27.13L43.79 -27.20L43.73 -27.19L43.60 -27.14L43.47 -27.04L43.24 -26.98L43.19 -26.93L43.14 -26.83L43.06 -26.77L42.96 -26.79L42.85 -26.72L42.65 -26.56L42.55 -26.51L42.46 -26.51L42.36 -26.59L42.15 -26.70L42.01 -26.73L41.82 -26.71L41.73 -26.73L41.57 -26.85L41.53 -26.94L41.45 -27.00L41.17 -27.14L40.94 -27.32L40.90 -27.39L40.87 -27.49L40.77 -27.62L40.55 -27.72L40.43 -27.82L40.28 -27.85L40.14 -27.84L40.09 -27.86L40.03 -27.91L39.84 -28.13L39.84 -28.22L39.73 -28.43L39.70 -28.51L39.67 -28.73L39.64 -28.78L39.52 -28.87L39.50 -28.93L39.53 -29.00L39.53 -29.06L39.47 -29.12L39.38 -29.15L39.35 -29.21L39.37 -29.34L39.36 -29.42L39.27 -29.55L39.15 -29.68L39.03 -29.87L38.98 -29.92L38.95 -30.05L38.91 -30.20L38.84 -30.21L38.51 -30.03L38.41 -30.13L38.12 -30.31L38.09 -30.33L38.07 -30.37L38.11 -30.40L38.15 -30.41L38.22 -30.38L38.26 -30.41L38.25 -30.47L38.18 -30.51L38.07 -30.51L38.10 -30.45L38.01 -30.40L37.99 -30.33L38.00 -30.24L38.01 -30.12L37.97 -30.06L37.94 -30.04L37.82 -30.03L37.76 -29.97L37.72 -29.96L37.67 -30.00L37.63 -30.04L37.60 -30.11L37.60 -30.16L37.61 -30.19L37.59 -30.23L37.55 -30.29L37.51 -30.32L37.47 -30.32L37.44 -30.35L37.41 -30.42L37.35 -30.46L37.31 -30.47L37.31 -30.66L37.31 -30.82L37.31 -30.99L37.17 -31.00L37.05 -31.00L37.05 -31.14L37.05 -31.40L37.10 -31.60L37.16 -31.79L37.07 -31.94L36.98 -32.09L36.92 -32.15L36.84 -32.34L36.81 -32.42L36.78 -32.46L36.74 -32.47L36.61 -32.47L36.49 -32.57L36.35 -32.69L36.18 -32.83L36.04 -32.93L35.97 -32.95L35.83 -32.96L35.81 -32.98L35.81 -33.03L35.81 -33.09L35.85 -33.17L35.86 -33.23L35.76 -33.42L35.73 -33.47L35.64 -33.49L35.66 -33.55L35.66 -33.58L35.65 -33.61L35.63 -33.62L35.60 -33.63L35.54 -33.60L35.49 -33.69L35.33 -33.93L35.28 -33.96L35.27 -33.97L35.31 -34.04L35.38 -34.15L35.39 -34.22L35.38 -34.28L35.31 -34.42L35.32 -34.47L35.35 -34.53L35.35 -34.58L35.40 -34.57L35.46 -34.57L35.48 -34.61L35.48 -34.75L35.49 -34.80L35.68 -35.03L35.78 -35.08L35.85 -35.13L35.86 -35.20L35.85 -35.23L35.83 -35.28L35.83 -35.32L35.75 -35.43L35.72 -35.48L35.72 -35.52L35.74 -35.61L35.77 -35.67L35.88 -35.71L35.95 -35.74L35.95 -35.77L35.87 -35.82L35.70 -35.84L35.57 -35.82L35.53 -35.84L35.47 -35.93L35.40 -35.98L35.34 -36.01L35.28 -36.00L35.25 -36.02L35.24 -36.05L35.15 -36.36L35.13 -36.40L35.09 -36.41L35.05 -36.41L35.03 -36.43L35.01 -36.47L34.99 -36.53L34.99 -36.60L34.99 -36.66L34.98 -36.70L34.95 -36.74L34.91 -36.77L34.87 -36.80L34.81 -37.06L34.78 -37.14L34.78 -37.16L34.78 -37.22L34.81 -37.27L34.80 -37.29L34.74 -37.36L34.66 -37.42L34.63 -37.44L34.63 -37.51L34.64 -37.56L34.63 -37.61L34.61 -37.64L34.61 -37.66L34.65 -37.71L34.62 -37.74L34.50 -37.83L34.45 -37.87L34.36 -37.88L34.35 -37.91L34.37 -37.97L34.40 -38.04L34.44 -38.11L34.46 -38.15L34.48 -38.21L34.48 -38.26L34.54 -38.32L34.54 -38.34L34.52 -38.36L34.48 -38.37L34.44 -38.37L34.42 -38.39L34.41 -38.42L34.42 -38.56L34.40 -38.64L34.39 -38.70L34.40 -38.84L34.37 -38.86L34.32 -38.93L34.30 -38.99L34.31 -39.02L34.32 -39.06L34.33 -39.11L34.33 -39.14L34.28 -39.18L34.25 -39.22L34.25 -39.26L34.23 -39.31L34.21 -39.35L34.21 -39.38L34.22 -39.39L34.28 -39.40L34.37 -39.40L34.45 -39.40L34.49 -39.42L34.54 -39.67L34.59 -39.73L34.65 -39.77L34.75 -39.68L34.80 -39.65L34.82 -39.65L34.84 -39.63L34.96 -39.42L35.02 -39.36L35.05 -39.31L35.08 -39.26L35.11 -39.22L35.16 -39.19L35.23 -39.14L35.27 -39.10L35.34 -39.01L35.41 -38.97L35.68 -38.91L35.83 -38.88L35.87 -38.87L35.99 -38.91L36.12 -38.91L36.17 -38.90L36.35 -39.09L36.40 -39.15L36.51 -39.18L36.57 -39.25L36.66 -39.34L36.78 -39.42L36.89 -39.50L36.97 -39.54L37.12 -39.65L37.21 -39.69L37.29 -39.68L37.41 -39.56L37.52 -39.45L37.55 -39.40L37.50 -39.36L37.40 -39.31L37.38 -39.28L37.38 -39.24L37.38 -39.20L37.39 -39.17L37.51 -39.10L37.52 -39.06L37.52 -39.02L37.51 -38.99L37.48 -38.98L37.40 -38.96L37.34 -38.94L37.31 -38.91L37.29 -38.88L37.29 -38.85L37.31 -38.82L37.46 -38.72L37.47 -38.69L37.50 -38.64L37.53 -38.61L37.59 -38.61L37.62 -38.59L37.76 -38.41L37.79 -38.40L37.95 -38.44L37.97 -38.44L37.97 -38.39L38.00 -38.14L38.02 -38.02L38.04 -37.89L38.09 -37.78L38.14 -37.67L38.21 -37.60L38.36 -37.52L38.44 -37.50L38.64 -37.48L38.84 -37.44L38.95 -37.41L38.99 -37.38L39.02 -37.34L39.11 -37.15L39.26 -37.01L39.57 -36.81L39.72 -36.74L40.22 -36.61L40.55 -36.62L41.47 -36.87L41.78 -36.93L41.89 -36.93L41.82 -36.88L41.71 -36.85L41.78 -36.82L41.88 -36.81L41.93 -36.82L41.97 -36.85L41.98 -36.90L41.97 -36.95L41.92 -37.18L41.89 -37.34ZM21.65 -36.55L21.63 -36.54L21.59 -36.58L21.59 -36.61L21.63 -36.64L21.65 -36.64L21.65 -36.62L21.65 -36.58L21.65 -36.55ZM16.02 -38.38L16.03 -38.27L16.08 -38.25L16.15 -38.14L16.15 -38.09L16.13 -38.07L16.01 -38.12L15.98 -38.10L15.95 -38.11L15.93 -38.16L15.93 -38.18L15.91 -38.22L15.89 -38.23L15.84 -38.19L15.81 -38.18L15.81 -38.22L15.86 -38.34L15.88 -38.36L15.91 -38.32L15.94 -38.33L15.97 -38.39L15.97 -38.46L15.98 -38.48L16.02 -38.38ZM16.23 -37.81L16.31 -37.71L16.25 -37.73L16.17 -37.66L16.09 -37.74L16.03 -37.82L16.02 -37.85L16.08 -37.93L16.13 -37.85L16.19 -37.84L16.23 -37.81ZM16.07 -38.61L16.04 -38.60L16.02 -38.61L15.99 -38.60L15.97 -38.58L15.97 -38.66L16.00 -38.76L16.03 -38.82L16.08 -38.84L16.10 -38.80L16.10 -38.64L16.07 -38.61ZM16.13 -38.33L16.09 -38.32L16.04 -38.41L16.02 -38.48L16.04 -38.48L16.06 -38.48L16.09 -38.45L16.09 -38.43L16.09 -38.40L16.11 -38.37L16.13 -38.33ZM15.60 -39.43L15.62 -39.38L15.52 -39.41L15.45 -39.46L15.39 -39.58L15.27 -39.73L15.27 -39.77L15.31 -39.80L15.41 -39.82L15.46 -39.80L15.48 -39.77L15.49 -39.75L15.43 -39.69L15.42 -39.67L15.46 -39.62L15.46 -39.60L15.48 -39.51L15.51 -39.47L15.56 -39.44L15.60 -39.43ZM18.19 -38.96L18.24 -38.85L18.28 -38.81L18.37 -38.77L18.41 -38.76L18.55 -38.69L18.73 -38.67L18.75 -38.65L18.77 -38.59L18.80 -38.54L18.81 -38.50L18.79 -38.46L18.82 -38.34L18.86 -38.22L18.93 -38.16L19.01 -38.15L19.09 -38.15L19.11 -38.12L19.10 -38.02L19.06 -37.98L19.04 -37.97L19.01 -37.98L18.99 -38.01L18.97 -38.02L18.93 -38.02L18.89 -38.06L18.81 -38.12L18.80 -38.15L18.80 -38.20L18.76 -38.24L18.73 -38.32L18.70 -38.34L18.68 -38.37L18.68 -38.39L18.56 -38.40L18.46 -38.40L18.38 -38.44L18.35 -38.55L18.30 -38.58L18.26 -38.61L18.23 -38.66L18.15 -38.73L18.07 -38.80L17.98 -38.85L17.89 -38.87L17.82 -38.84L17.78 -38.85L17.77 -38.87L17.86 -38.92L17.98 -39.00L18.07 -39.03L18.11 -39.03L18.19 -38.96ZM18.48 -39.11L18.44 -39.08L18.39 -39.10L18.33 -39.21L18.48 -39.11ZM18.56 -39.16L18.52 -39.15L18.56 -39.23L18.63 -39.27L18.60 -39.20L18.56 -39.16ZM19.17 -38.81L19.09 -38.78L19.07 -38.79L19.09 -38.82L19.09 -38.83L19.01 -38.89L19.02 -38.96L19.03 -38.98L19.09 -38.94L19.10 -38.88L19.17 -38.81ZM19.25 -40.61L19.15 -40.58L19.05 -40.65L19.05 -40.69L19.10 -40.77L19.13 -40.79L19.21 -40.79L19.25 -40.73L19.26 -40.70L19.25 -40.66L19.25 -40.61ZM18.30 -37.93L18.27 -37.90L18.23 -37.90L18.21 -37.91L18.20 -37.93L18.21 -37.94L18.23 -37.98L18.25 -37.99L18.27 -37.99L18.29 -37.97L18.30 -37.93ZM17.91 -36.19L17.90 -36.15L17.83 -36.18L17.80 -36.22L17.80 -36.32L17.82 -36.37L17.83 -36.38L17.87 -36.33L17.95 -36.25L17.91 -36.19ZM21.11 -35.47L21.09 -35.41L21.06 -35.46L21.07 -35.51L21.03 -35.60L21.10 -35.73L21.10 -35.79L21.15 -35.82L21.14 -35.71L21.10 -35.63L21.14 -35.56L21.16 -35.48L21.11 -35.47ZM20.99 -36.96L20.92 -36.94L20.93 -37.02L20.89 -37.09L20.95 -37.05L20.99 -37.01L21.01 -37.00L21.01 -36.98L20.99 -36.96ZM20.94 -36.73L20.92 -36.73L20.94 -36.77L21.03 -36.84L21.15 -36.90L21.18 -36.90L21.25 -36.87L21.13 -36.81L21.10 -36.78L21.01 -36.77L20.94 -36.73ZM19.85 -36.97L19.78 -36.93L19.73 -36.98L19.71 -37.07L19.83 -37.20L19.86 -37.19L19.88 -37.15L19.88 -37.04L19.85 -36.97ZM19.64 -37.07L19.58 -36.99L19.53 -37.00L19.51 -37.03L19.54 -37.11L19.61 -37.15L19.64 -37.14L19.64 -37.08L19.64 -37.07ZM19.80 -36.39L19.76 -36.34L19.71 -36.36L19.73 -36.38L19.75 -36.40L19.75 -36.44L19.73 -36.47L19.74 -36.47L19.79 -36.44L19.80 -36.39ZM19.72 -36.67L19.71 -36.66L19.65 -36.72L19.63 -36.76L19.65 -36.79L19.74 -36.72L19.72 -36.67ZM20.84 -37.81L20.94 -37.78L20.96 -37.78L21.01 -37.77L21.02 -37.71L20.96 -37.70L20.86 -37.64L20.82 -37.66L20.76 -37.70L20.68 -37.71L20.65 -37.72L20.70 -37.78L20.78 -37.81L20.84 -37.81ZM20.23 -37.53L20.19 -37.53L20.20 -37.57L20.27 -37.64L20.37 -37.64L20.45 -37.67L20.47 -37.67L20.43 -37.62L20.36 -37.57L20.23 -37.53ZM20.09 -36.79L20.02 -36.78L20.00 -36.79L20.04 -36.81L20.07 -36.82L20.09 -36.85L20.16 -36.89L20.20 -36.94L20.25 -36.90L20.19 -36.88L20.09 -36.79ZM20.56 -36.59L20.50 -36.56L20.46 -36.51L20.41 -36.55L20.41 -36.60L20.46 -36.58L20.50 -36.61L20.49 -36.64L20.53 -36.62L20.56 -36.59ZM18.92 -37.58L18.87 -37.53L18.86 -37.60L18.90 -37.68L18.94 -37.68L18.96 -37.65L18.92 -37.58ZM18.99 -37.34L18.94 -37.31L18.96 -37.38L18.94 -37.42L18.96 -37.45L18.98 -37.48L19.00 -37.45L19.02 -37.41L18.99 -37.34ZM19.06 -36.76L19.06 -36.70L19.06 -36.68L18.90 -36.66L18.92 -36.72L18.92 -36.74L18.98 -36.71L19.00 -36.73L19.01 -36.75L19.06 -36.76ZM19.38 -37.49L19.38 -37.39L19.36 -37.39L19.34 -37.41L19.34 -37.45L19.35 -37.51L19.38 -37.49ZM19.42 -37.76L19.39 -37.69L19.34 -37.77L19.27 -37.82L19.24 -37.87L19.20 -37.90L19.19 -37.96L19.24 -37.99L19.26 -37.99L19.31 -37.91L19.39 -37.90L19.39 -37.86L19.41 -37.80L19.42 -37.76ZM19.62 -37.60L19.60 -37.53L19.55 -37.55L19.46 -37.61L19.44 -37.65L19.42 -37.68L19.46 -37.68L19.50 -37.65L19.60 -37.63L19.62 -37.60ZM19.21 -36.92L19.19 -36.92L19.17 -36.96L19.17 -37.00L19.18 -37.02L19.20 -37.02L19.24 -36.95L19.21 -36.92ZM20.28 -38.22L20.20 -38.16L20.12 -38.24L20.11 -38.27L20.16 -38.30L20.19 -38.35L20.17 -38.42L20.09 -38.51L20.08 -38.57L20.21 -38.60L20.29 -38.55L20.33 -38.54L20.31 -38.49L20.32 -38.47L20.32 -38.30L20.29 -38.28L20.28 -38.23L20.28 -38.22ZM20.52 -39.33L20.51 -39.27L20.61 -39.17L20.65 -39.11L20.66 -39.05L20.66 -39.03L20.61 -39.06L20.58 -39.07L20.59 -39.03L20.63 -38.99L20.57 -38.97L20.51 -38.97L20.33 -39.03L20.29 -39.08L20.39 -39.16L20.42 -39.20L20.34 -39.19L20.26 -39.10L20.13 -39.14L20.09 -39.18L20.08 -39.20L20.13 -39.29L20.22 -39.28L20.27 -39.30L20.33 -39.33L20.33 -39.37L20.47 -39.38L20.52 -39.33ZM19.96 -40.43L19.87 -40.40L19.77 -40.48L19.87 -40.52L19.91 -40.49L19.94 -40.46L19.96 -40.43ZM19.76 -39.98L19.74 -39.95L19.71 -39.89L19.70 -39.81L19.66 -39.81L19.63 -39.82L19.62 -39.85L19.62 -39.89L19.60 -39.89L19.58 -39.85L19.57 -39.83L19.52 -39.83L19.47 -39.85L19.48 -39.91L19.46 -39.98L19.47 -40.00L19.61 -40.01L19.65 -39.96L19.70 -39.98L19.72 -40.02L19.78 -40.03L19.76 -39.98ZM19.74 -37.42L19.66 -37.41L19.67 -37.49L19.70 -37.51L19.78 -37.47L19.78 -37.45L19.74 -37.42ZM19.06 -37.13L19.03 -37.11L18.98 -37.13L18.99 -37.19L19.02 -37.21L19.06 -37.19L19.06 -37.17L19.06 -37.13ZM21.64 -35.93L21.58 -35.91L21.56 -35.91L21.53 -35.96L21.57 -36.07L21.54 -36.14L21.53 -36.17L21.58 -36.21L21.61 -36.28L21.69 -36.35L21.89 -36.43L21.94 -36.43L21.93 -36.37L21.87 -36.21L21.81 -36.13L21.83 -36.07L21.73 -36.05L21.64 -35.93ZM18.53 -35.53L18.59 -35.53L18.66 -35.53L18.68 -35.53L18.72 -35.59L18.78 -35.60L18.80 -35.54L18.75 -35.51L18.73 -35.49L18.74 -35.48L18.79 -35.46L18.85 -35.47L18.85 -35.42L18.86 -35.39L18.89 -35.36L18.92 -35.36L18.99 -35.37L19.06 -35.38L19.13 -35.41L19.21 -35.43L19.43 -35.41L19.51 -35.35L19.65 -35.34L19.79 -35.31L19.87 -35.33L19.99 -35.35L20.01 -35.33L20.00 -35.18L20.00 -35.14L20.04 -35.12L20.07 -35.13L20.12 -35.18L20.22 -35.22L20.33 -35.22L20.42 -35.31L20.45 -35.31L20.44 -35.27L20.42 -35.16L20.40 -35.10L20.39 -35.05L20.33 -35.02L20.24 -35.01L20.07 -35.02L19.90 -35.01L19.58 -34.96L19.27 -34.93L19.23 -34.95L19.23 -35.01L19.22 -35.06L19.20 -35.09L19.10 -35.11L19.01 -35.16L18.64 -35.22L18.56 -35.25L18.42 -35.23L18.37 -35.23L18.33 -35.26L18.31 -35.30L18.30 -35.42L18.31 -35.53L18.34 -35.57L18.36 -35.53L18.39 -35.51L18.43 -35.55L18.43 -35.60L18.44 -35.65L18.47 -35.63L18.49 -35.56L18.53 -35.53ZM20.45 -41.72L20.52 -41.70L20.56 -41.66L20.59 -41.63L20.63 -41.61L20.65 -41.60L20.68 -41.51L20.69 -41.40L20.67 -41.35L20.62 -41.34L20.46 -41.24L20.45 -41.14L20.46 -41.10L20.46 -41.06L20.48 -41.04L20.48 -41.00L20.46 -40.95L20.39 -40.88L20.34 -40.83L20.29 -40.75L20.26 -40.74L20.23 -40.73L20.21 -40.77L20.09 -40.84L19.81 -40.89L19.68 -40.94L19.62 -40.93L19.51 -40.99L19.43 -40.97L19.26 -40.86L19.18 -40.87L19.08 -40.94L19.02 -40.95L18.95 -40.91L18.83 -40.79L18.71 -40.72L18.61 -40.75L18.46 -40.75L18.45 -40.68L18.48 -40.63L18.55 -40.54L18.52 -40.48L18.54 -40.42L18.59 -40.41L18.67 -40.41L18.81 -40.33L18.87 -40.24L18.91 -40.15L18.83 -40.22L18.77 -40.28L18.69 -40.30L18.58 -40.36L18.51 -40.37L18.44 -40.33L18.43 -40.29L18.51 -40.20L18.58 -40.15L18.62 -40.11L18.65 -40.02L18.63 -39.99L18.61 -39.97L18.52 -40.02L18.39 -40.22L18.20 -40.26L18.17 -40.22L18.21 -40.12L18.23 -40.07L18.40 -39.96L18.38 -39.93L18.36 -39.92L18.18 -39.99L18.12 -40.09L18.11 -40.22L17.95 -40.30L17.79 -40.40L17.76 -40.49L17.79 -40.52L17.81 -40.59L17.72 -40.58L17.67 -40.54L17.58 -40.50L17.58 -40.43L17.59 -40.37L17.57 -40.28L17.54 -40.12L17.55 -40.04L17.74 -39.80L17.81 -39.63L17.85 -39.56L17.95 -39.49L18.05 -39.36L18.09 -39.29L18.12 -39.18L18.04 -39.10L17.99 -39.10L17.97 -39.13L18.00 -39.21L18.00 -39.26L17.86 -39.33L17.81 -39.31L17.75 -39.26L17.78 -39.17L17.82 -39.11L17.84 -39.03L17.92 -39.04L17.82 -38.95L17.72 -38.90L17.62 -38.90L17.56 -38.89L17.54 -38.87L17.59 -38.85L17.63 -38.85L17.70 -38.80L17.89 -38.74L17.98 -38.67L18.07 -38.66L18.16 -38.53L18.31 -38.49L18.40 -38.35L18.52 -38.32L18.62 -38.27L18.65 -38.23L18.67 -38.14L18.67 -37.95L18.70 -37.82L18.70 -37.77L18.69 -37.71L18.66 -37.68L18.63 -37.68L18.55 -37.78L18.44 -37.88L18.32 -38.01L18.29 -38.03L18.26 -38.03L18.20 -37.99L18.02 -37.96L17.94 -37.91L17.91 -37.90L17.90 -37.88L17.94 -37.85L17.98 -37.80L17.98 -37.72L18.02 -37.62L18.07 -37.60L18.14 -37.60L18.18 -37.58L18.19 -37.54L18.23 -37.50L18.25 -37.46L18.25 -37.44L18.07 -37.38L18.03 -37.35L18.00 -37.33L17.95 -37.36L17.95 -37.44L17.88 -37.48L17.83 -37.52L17.76 -37.53L17.70 -37.59L17.66 -37.54L17.69 -37.39L17.76 -37.29L17.87 -37.02L17.92 -36.85L17.93 -36.77L17.90 -36.64L17.96 -36.55L18.00 -36.45L17.95 -36.45L17.92 -36.49L17.86 -36.53L17.74 -36.69L17.70 -36.79L17.65 -36.79L17.57 -36.78L17.47 -36.57L17.48 -36.45L17.43 -36.48L17.39 -36.51L17.39 -36.65L17.39 -36.70L17.27 -36.88L17.22 -36.90L17.20 -36.96L17.16 -37.03L17.10 -37.02L17.06 -36.99L17.05 -36.89L17.04 -36.80L17.01 -36.74L16.89 -36.86L16.77 -37.08L16.77 -37.20L16.85 -37.31L16.84 -37.39L16.76 -37.54L16.64 -37.64L16.57 -37.67L16.54 -37.77L16.48 -37.83L16.42 -37.85L16.41 -37.89L16.43 -37.92L16.56 -38.03L16.63 -38.20L16.67 -38.20L16.74 -38.16L16.83 -38.18L16.90 -38.27L16.96 -38.33L17.06 -38.32L17.28 -38.19L17.53 -38.11L17.65 -38.05L17.72 -37.98L17.75 -37.97L17.81 -37.96L17.81 -38.01L17.79 -38.05L17.84 -38.07L17.97 -38.07L17.99 -38.10L18.01 -38.13L17.99 -38.18L17.94 -38.20L17.90 -38.20L17.87 -38.22L17.82 -38.20L17.74 -38.23L17.70 -38.26L17.68 -38.29L17.55 -38.35L17.42 -38.44L17.39 -38.39L17.34 -38.36L17.27 -38.35L17.07 -38.41L16.94 -38.37L16.87 -38.36L16.82 -38.35L16.76 -38.33L16.68 -38.32L16.62 -38.41L16.59 -38.48L16.57 -38.49L16.57 -38.42L16.55 -38.37L16.46 -38.35L16.40 -38.39L16.36 -38.50L16.31 -38.65L16.22 -38.78L16.14 -38.81L16.14 -38.87L16.14 -38.93L16.23 -38.94L16.37 -38.89L16.40 -38.90L16.44 -38.92L16.43 -38.98L16.41 -39.03L16.37 -39.03L16.34 -39.03L16.26 -39.04L16.15 -39.01L16.09 -39.03L16.08 -39.07L15.98 -39.15L15.90 -39.26L15.77 -39.33L15.69 -39.55L15.62 -39.64L15.54 -39.71L15.56 -39.71L15.59 -39.70L15.64 -39.66L15.70 -39.65L15.73 -39.68L15.75 -39.70L15.76 -39.74L15.77 -39.78L15.78 -39.80L15.82 -39.79L15.84 -39.80L15.84 -39.84L15.81 -39.89L15.78 -39.95L15.78 -39.98L15.80 -39.99L15.84 -40.02L15.86 -40.05L15.90 -40.07L15.95 -40.07L16.01 -40.08L16.05 -40.12L16.06 -40.15L16.08 -40.25L16.10 -40.29L16.12 -40.33L16.14 -40.39L16.17 -40.45L16.23 -40.47L16.28 -40.49L16.32 -40.56L16.34 -40.62L16.34 -40.66L16.31 -40.72L16.28 -40.78L16.29 -40.85L16.40 -40.86L16.43 -40.86L16.57 -40.87L16.63 -40.91L16.67 -40.90L16.77 -40.87L16.80 -40.90L16.92 -40.95L17.04 -41.11L17.09 -41.13L17.20 -41.14L17.24 -41.16L17.28 -41.15L17.41 -41.12L17.48 -41.12L17.56 -41.14L17.66 -41.18L17.68 -41.31L17.70 -41.33L17.76 -41.34L17.81 -41.34L17.89 -41.33L17.99 -41.32L18.06 -41.39L18.16 -41.39L18.21 -41.40L18.29 -41.39L18.37 -41.39L18.46 -41.41L18.56 -41.46L18.63 -41.45L18.66 -41.46L18.67 -41.47L18.69 -41.53L18.83 -41.53L18.87 -41.53L18.95 -41.52L19.03 -41.56L19.05 -41.55L19.09 -41.47L19.11 -41.44L19.15 -41.42L19.25 -41.36L19.27 -41.37L19.31 -41.39L19.42 -41.36L19.53 -41.32L19.62 -41.24L19.72 -41.26L19.83 -41.30L19.91 -41.31L19.99 -41.32L20.04 -41.33L20.14 -41.31L20.25 -41.35L20.31 -41.39L20.32 -41.44L20.31 -41.52L20.29 -41.61L20.26 -41.64L20.25 -41.67L20.27 -41.70L20.28 -41.73L20.36 -41.74L20.45 -41.72ZM33.75 -41.11L33.75 -41.13L33.75 -41.16L33.72 -41.18L33.69 -41.19L33.63 -41.19L33.57 -41.20L33.53 -41.24L33.52 -41.27L33.54 -41.29L33.53 -41.31L33.46 -41.35L33.34 -41.47L33.27 -41.49L33.25 -41.56L33.22 -41.58L33.17 -41.59L33.11 -41.58L33.09 -41.57L33.08 -41.56L33.03 -41.47L33.00 -41.44L32.92 -41.45L32.85 -41.48L32.80 -41.49L32.70 -41.49L32.58 -41.50L32.50 -41.43L32.46 -41.44L32.40 -41.47L32.30 -41.50L32.25 -41.52L32.40 -41.70L32.45 -41.82L32.45 -41.89L32.45 -41.97L32.37 -42.15L32.31 -42.40L32.24 -42.66L32.18 -42.74L31.96 -42.83L31.90 -42.93L31.73 -43.06L31.49 -43.12L31.44 -43.15L31.23 -43.31L31.06 -43.42L31.10 -43.48L31.15 -43.55L31.20 -43.57L31.35 -43.54L31.48 -43.51L31.58 -43.53L31.70 -43.48L31.81 -43.42L31.92 -43.37L32.14 -43.33L32.21 -43.28L32.31 -43.22L32.67 -43.19L32.70 -43.20L32.73 -43.21L32.85 -43.23L32.96 -43.22L33.07 -43.16L33.15 -43.16L33.22 -43.17L33.32 -43.13L33.40 -43.09L33.41 -43.05L33.48 -42.99L33.68 -42.90L33.85 -42.85L33.90 -42.81L34.02 -42.75L34.03 -42.73L34.03 -42.70L33.99 -42.66L33.98 -42.62L34.00 -42.59L34.05 -42.57L34.16 -42.57L34.19 -42.60L34.27 -42.62L34.34 -42.65L34.44 -42.70L34.58 -42.75L34.64 -42.75L34.69 -42.73L34.73 -42.71L34.79 -42.62L34.85 -42.75L34.87 -42.76L34.92 -42.73L35.02 -42.69L35.09 -42.68L35.13 -42.65L35.23 -42.53L35.40 -42.54L35.47 -42.52L35.51 -42.50L35.53 -42.48L35.50 -42.36L35.46 -42.23L35.46 -42.20L35.53 -42.16L35.62 -42.11L35.67 -42.07L35.71 -42.04L35.78 -42.01L35.87 -41.99L35.91 -41.99L35.95 -41.96L36.06 -41.90L36.08 -41.89L36.06 -41.86L36.01 -41.79L35.98 -41.76L35.94 -41.75L35.90 -41.74L35.88 -41.70L35.88 -41.66L35.89 -41.62L35.90 -41.61L35.94 -41.60L35.98 -41.51L36.04 -41.46L36.14 -41.41L36.22 -41.34L36.26 -41.29L36.26 -41.25L36.23 -41.16L36.16 -41.09L36.10 -41.07L36.08 -41.08L36.04 -41.10L35.96 -41.15L35.88 -41.20L35.81 -41.18L35.77 -41.17L35.68 -41.19L35.58 -41.22L35.53 -41.26L35.51 -41.29L35.52 -41.34L35.29 -41.43L35.18 -41.45L35.13 -41.42L34.97 -41.29L34.95 -41.28L34.82 -41.26L34.82 -41.25L34.85 -41.22L34.84 -41.21L34.63 -41.21L34.56 -41.19L34.37 -41.21L34.30 -41.20L34.25 -41.18L34.12 -41.16L34.03 -41.13L33.91 -41.12L33.79 -41.12L33.75 -41.11ZM26.42 -35.06L26.39 -35.06L26.34 -35.09L26.31 -35.09L26.29 -35.07L26.26 -35.05L26.23 -35.04L26.21 -35.04L26.17 -35.02L26.12 -35.02L26.05 -35.04L26.01 -35.00L26.00 -35.01L26.00 -35.10L25.97 -35.14L25.94 -35.16L25.90 -35.15L25.83 -35.16L25.79 -35.17L25.70 -35.15L25.63 -35.12L25.58 -35.09L25.54 -35.09L25.47 -35.12L25.42 -35.15L25.42 -35.17L25.46 -35.16L25.55 -35.18L25.58 -35.28L25.60 -35.39L25.74 -35.36L25.88 -35.34L26.00 -35.34L26.11 -35.35L26.47 -35.47L26.57 -35.55L26.63 -35.57L26.74 -35.63L26.85 -35.66L26.78 -35.59L26.37 -35.29L26.35 -35.20L26.37 -35.14L26.42 -35.06ZM25.42 -35.17L25.42 -35.15L25.47 -35.12L25.54 -35.09L25.58 -35.09L25.63 -35.12L25.70 -35.15L25.79 -35.17L25.83 -35.16L25.90 -35.15L25.94 -35.16L25.97 -35.14L26.00 -35.10L26.00 -35.01L26.01 -35.00L26.05 -35.04L26.12 -35.02L26.17 -35.02L26.21 -35.04L26.23 -35.04L26.26 -35.05L26.29 -35.07L26.31 -35.09L26.34 -35.09L26.39 -35.06L26.42 -35.06L26.44 -35.05L26.46 -34.99L26.37 -34.97L26.28 -34.97L26.23 -34.97L26.18 -34.97L26.04 -34.81L25.96 -34.75L25.87 -34.72L25.78 -34.70L25.73 -34.70L25.69 -34.68L25.66 -34.64L25.66 -34.60L25.65 -34.57L25.60 -34.58L25.57 -34.64L25.54 -34.66L25.45 -34.65L25.40 -34.65L25.26 -34.71L25.21 -34.73L25.18 -34.78L25.11 -34.95L25.10 -35.08L25.17 -35.05L25.23 -35.09L25.30 -35.16L25.37 -35.18L25.42 -35.17ZM21.77 -41.97L21.66 -41.99L21.63 -41.98L21.60 -41.96L21.55 -41.96L21.49 -41.96L21.43 -41.93L21.39 -41.92L21.35 -41.95L21.26 -42.03L21.21 -42.08L21.17 -42.09L21.13 -42.08L20.99 -42.06L20.96 -42.03L20.89 -41.99L20.82 -41.98L20.73 -41.96L20.68 -41.97L20.65 -41.95L20.63 -41.90L20.61 -41.85L20.60 -41.83L20.48 -41.80L20.46 -41.77L20.45 -41.74L20.45 -41.72L20.36 -41.74L20.28 -41.73L20.27 -41.70L20.25 -41.67L20.26 -41.64L20.29 -41.61L20.31 -41.52L20.32 -41.44L20.31 -41.39L20.25 -41.35L20.14 -41.31L20.04 -41.33L19.99 -41.32L19.91 -41.31L19.83 -41.30L19.72 -41.26L19.62 -41.24L19.53 -41.32L19.42 -41.36L19.31 -41.39L19.27 -41.37L19.25 -41.36L19.15 -41.42L19.11 -41.44L19.09 -41.47L19.05 -41.55L19.03 -41.56L18.95 -41.52L18.87 -41.53L18.83 -41.53L18.69 -41.53L18.67 -41.47L18.66 -41.46L18.63 -41.45L18.56 -41.46L18.46 -41.41L18.37 -41.39L18.29 -41.39L18.21 -41.40L18.16 -41.39L18.06 -41.39L17.99 -41.32L17.89 -41.33L17.81 -41.34L17.82 -41.36L17.83 -41.61L17.88 -41.72L17.87 -41.74L17.86 -41.76L17.83 -41.78L17.80 -41.83L17.74 -41.99L17.71 -42.03L17.62 -42.06L17.55 -42.11L17.48 -42.16L17.36 -42.31L17.42 -42.33L17.44 -42.36L17.50 -42.44L17.51 -42.48L17.50 -42.50L17.46 -42.54L17.43 -42.63L17.45 -42.71L17.46 -42.75L17.44 -42.79L17.46 -42.84L17.50 -42.87L17.53 -42.88L17.64 -42.88L17.72 -42.99L17.76 -43.02L17.81 -43.08L17.83 -43.10L17.84 -43.14L17.85 -43.19L17.76 -43.25L17.73 -43.30L17.69 -43.35L17.64 -43.39L17.53 -43.45L17.48 -43.52L17.46 -43.60L17.43 -43.67L17.40 -43.71L17.39 -43.74L17.38 -43.78L17.38 -43.86L17.40 -43.97L17.42 -44.01L17.46 -44.02L17.56 -44.08L17.56 -44.15L17.58 -44.19L17.61 -44.22L17.64 -44.24L17.70 -44.20L17.83 -44.13L17.89 -44.08L17.89 -44.05L17.86 -44.02L17.80 -43.99L17.77 -43.95L17.76 -43.90L17.77 -43.86L17.81 -43.83L18.05 -43.87L18.29 -43.85L18.61 -43.79L18.82 -43.76L18.98 -43.79L19.28 -43.74L19.55 -43.69L19.81 -43.67L19.96 -43.71L20.06 -43.77L20.15 -43.87L20.37 -44.01L20.58 -44.08L20.86 -44.15L21.05 -44.17L21.07 -44.15L21.31 -44.02L21.41 -44.02L21.50 -44.00L21.53 -43.96L21.55 -43.96L21.67 -43.99L21.72 -43.92L21.79 -43.82L21.93 -43.77L22.05 -43.74L22.09 -43.74L22.21 -43.74L22.19 -43.50L22.12 -43.39L22.00 -43.43L21.86 -43.40L21.78 -43.27L21.74 -43.23L21.70 -43.19L21.67 -43.02L21.67 -42.75L21.62 -42.72L21.57 -42.71L21.36 -42.47L21.48 -42.40L21.53 -42.35L21.62 -42.21L21.74 -42.05L21.77 -41.97ZM34.82 -39.65L34.80 -39.68L34.78 -39.70L34.86 -39.72L34.99 -39.77L35.03 -39.74L35.06 -39.70L35.08 -39.66L35.08 -39.58L35.10 -39.57L35.16 -39.60L35.19 -39.57L35.24 -39.53L35.32 -39.49L35.44 -39.55L35.50 -39.56L35.55 -39.56L35.57 -39.55L35.58 -39.49L35.57 -39.42L35.56 -39.38L35.58 -39.35L35.68 -39.28L35.72 -39.24L35.71 -39.18L35.78 -39.02L35.80 -38.95L35.83 -38.88L35.68 -38.91L35.41 -38.97L35.34 -39.01L35.27 -39.10L35.23 -39.14L35.16 -39.19L35.11 -39.22L35.08 -39.26L35.05 -39.31L35.02 -39.36L34.96 -39.42L34.84 -39.63L34.82 -39.65ZM37.97 -38.44L37.95 -38.44L37.79 -38.40L37.76 -38.41L37.62 -38.59L37.59 -38.61L37.53 -38.61L37.50 -38.64L37.47 -38.69L37.46 -38.72L37.31 -38.82L37.29 -38.85L37.29 -38.88L37.31 -38.91L37.34 -38.94L37.40 -38.96L37.48 -38.98L37.51 -38.99L37.52 -39.02L37.52 -39.06L37.51 -39.10L37.39 -39.17L37.38 -39.20L37.38 -39.24L37.38 -39.28L37.40 -39.31L37.50 -39.36L37.55 -39.40L37.52 -39.45L37.41 -39.56L37.29 -39.68L37.21 -39.69L37.12 -39.65L36.97 -39.54L36.89 -39.50L36.78 -39.42L36.66 -39.34L36.57 -39.25L36.51 -39.18L36.40 -39.15L36.35 -39.09L36.17 -38.90L36.12 -38.91L36.12 -39.00L36.12 -39.07L36.11 -39.11L36.05 -39.17L36.05 -39.19L36.07 -39.21L36.11 -39.20L36.17 -39.20L36.20 -39.22L36.14 -39.30L36.08 -39.35L36.04 -39.38L36.03 -39.40L36.03 -39.42L36.04 -39.43L36.11 -39.48L36.12 -39.51L36.12 -39.56L35.99 -39.62L35.90 -39.59L35.81 -39.66L35.76 -39.72L35.69 -39.78L35.64 -39.81L35.58 -39.88L35.48 -39.96L35.41 -39.98L35.42 -39.99L35.43 -40.00L35.45 -40.01L35.63 -40.01L35.65 -40.02L35.66 -40.06L35.69 -40.10L35.72 -40.18L35.71 -40.23L35.54 -40.33L35.41 -40.42L35.32 -40.53L35.26 -40.64L35.26 -40.67L35.28 -40.71L35.41 -40.80L35.43 -40.83L35.42 -40.85L35.37 -40.90L35.31 -40.95L35.29 -40.99L35.25 -41.01L35.18 -41.01L35.05 -41.07L35.02 -41.08L35.01 -41.09L35.02 -41.10L35.11 -41.13L35.11 -41.15L35.08 -41.18L35.03 -41.20L34.98 -41.25L34.97 -41.29L35.13 -41.42L35.18 -41.45L35.29 -41.43L35.52 -41.34L35.51 -41.29L35.53 -41.26L35.58 -41.22L35.68 -41.19L35.77 -41.17L35.81 -41.18L35.88 -41.20L35.96 -41.15L36.04 -41.10L36.08 -41.08L36.10 -41.07L36.16 -41.09L36.23 -41.16L36.26 -41.25L36.26 -41.29L36.22 -41.34L36.14 -41.41L36.04 -41.46L35.98 -41.51L35.94 -41.60L35.90 -41.61L35.89 -41.62L35.88 -41.66L35.88 -41.70L35.90 -41.74L35.94 -41.75L35.98 -41.76L36.01 -41.79L36.06 -41.86L36.08 -41.89L36.16 -41.87L36.17 -41.81L36.19 -41.80L36.22 -41.81L36.28 -41.83L36.32 -41.81L36.38 -41.74L36.47 -41.67L36.51 -41.62L36.53 -41.59L36.57 -41.56L36.63 -41.52L36.68 -41.46L36.72 -41.32L36.77 -41.28L36.92 -41.23L36.98 -41.22L37.13 -41.20L37.19 -41.21L37.27 -41.33L37.34 -41.46L37.41 -41.48L37.53 -41.54L37.60 -41.60L37.63 -41.66L37.70 -41.78L37.74 -41.85L37.81 -41.79L37.94 -41.63L38.11 -41.37L38.16 -41.30L38.18 -41.22L38.21 -41.12L38.25 -41.03L38.43 -40.80L38.51 -40.72L38.63 -40.61L38.68 -40.58L38.73 -40.58L38.84 -40.58L38.94 -40.53L38.99 -40.51L39.04 -40.46L39.09 -40.41L39.13 -40.28L38.96 -40.32L38.79 -40.32L38.69 -40.29L38.59 -40.25L38.50 -40.19L38.44 -40.09L38.40 -39.84L38.33 -39.61L38.33 -39.50L38.36 -39.40L38.35 -39.35L38.32 -39.33L38.28 -39.28L38.23 -39.07L38.20 -39.03L38.17 -39.00L38.16 -39.03L38.16 -39.09L38.08 -39.13L38.04 -39.08L38.02 -38.96L37.96 -38.84L37.96 -38.82L37.97 -38.44ZM35.39 -40.62L35.40 -40.65L35.38 -40.66L35.36 -40.66L35.34 -40.65L35.34 -40.61L35.36 -40.60L35.39 -40.62ZM34.98 -41.03L34.97 -41.02L34.94 -41.03L34.93 -41.05L34.94 -41.08L34.96 -41.08L34.98 -41.08L34.99 -41.05L34.98 -41.03ZM34.78 -39.70L34.76 -39.75L34.62 -39.89L34.50 -40.00L34.41 -40.04L34.33 -40.04L34.19 -40.01L34.14 -40.02L34.03 -40.07L33.93 -40.13L33.94 -40.15L33.96 -40.17L33.94 -40.24L33.88 -40.36L33.89 -40.39L33.87 -40.44L33.85 -40.48L33.93 -40.57L33.97 -40.65L33.97 -40.72L33.95 -40.79L33.90 -40.93L33.87 -40.97L33.81 -41.01L33.76 -41.06L33.75 -41.11L33.79 -41.12L33.91 -41.12L34.03 -41.13L34.12 -41.16L34.25 -41.18L34.30 -41.20L34.37 -41.21L34.56 -41.19L34.63 -41.21L34.84 -41.21L34.85 -41.22L34.82 -41.25L34.82 -41.26L34.95 -41.28L34.97 -41.29L34.98 -41.25L35.03 -41.20L35.08 -41.18L35.11 -41.15L35.11 -41.13L35.02 -41.10L35.01 -41.09L35.02 -41.08L35.05 -41.07L35.18 -41.01L35.25 -41.01L35.29 -40.99L35.31 -40.95L35.37 -40.90L35.42 -40.85L35.43 -40.83L35.41 -40.80L35.28 -40.71L35.26 -40.67L35.26 -40.64L35.32 -40.53L35.41 -40.42L35.54 -40.33L35.71 -40.23L35.72 -40.18L35.69 -40.10L35.66 -40.06L35.65 -40.02L35.63 -40.01L35.45 -40.01L35.43 -40.00L35.42 -39.99L35.41 -39.98L35.48 -39.96L35.58 -39.88L35.64 -39.81L35.69 -39.78L35.76 -39.72L35.81 -39.66L35.90 -39.59L35.99 -39.62L36.12 -39.56L36.12 -39.51L36.11 -39.48L36.04 -39.43L36.03 -39.42L36.03 -39.40L36.04 -39.38L36.08 -39.35L36.14 -39.30L36.20 -39.22L36.17 -39.20L36.11 -39.20L36.07 -39.21L36.05 -39.19L36.05 -39.17L36.11 -39.11L36.12 -39.07L36.12 -39.00L36.12 -38.91L35.99 -38.91L35.87 -38.87L35.83 -38.88L35.80 -38.95L35.78 -39.02L35.71 -39.18L35.72 -39.24L35.68 -39.28L35.58 -39.35L35.56 -39.38L35.57 -39.42L35.58 -39.49L35.57 -39.55L35.55 -39.56L35.50 -39.56L35.44 -39.55L35.32 -39.49L35.24 -39.53L35.19 -39.57L35.16 -39.60L35.10 -39.57L35.08 -39.58L35.08 -39.66L35.06 -39.70L35.03 -39.74L34.99 -39.77L34.86 -39.72L34.78 -39.70ZM34.98 -41.03L34.99 -41.05L34.98 -41.08L34.96 -41.08L34.94 -41.08L34.93 -41.05L34.94 -41.03L34.97 -41.02L34.98 -41.03ZM35.39 -40.62L35.36 -40.60L35.34 -40.61L35.34 -40.65L35.36 -40.66L35.38 -40.66L35.40 -40.65L35.39 -40.62ZM15.03 -41.87L15.03 -41.92L15.04 -42.00L15.04 -42.02L15.04 -42.07L15.02 -42.13L14.98 -42.17L15.02 -42.25L15.07 -42.34L15.12 -42.41L15.18 -42.49L15.23 -42.57L15.27 -42.63L15.31 -42.65L15.33 -42.64L15.34 -42.61L15.34 -42.53L15.35 -42.50L15.37 -42.48L15.43 -42.49L15.49 -42.51L15.58 -42.55L15.59 -42.55L15.62 -42.52L15.69 -42.43L15.73 -42.34L15.81 -42.31L15.86 -42.28L15.92 -42.22L15.95 -42.17L15.99 -42.01L15.99 -41.92L15.98 -41.87L15.97 -41.86L15.93 -41.71L15.94 -41.63L15.94 -41.57L15.91 -41.55L15.89 -41.52L15.92 -41.39L15.92 -41.34L15.92 -41.27L15.98 -41.13L16.02 -41.08L16.05 -41.06L16.09 -40.93L16.12 -40.91L16.22 -40.92L16.26 -40.90L16.28 -40.87L16.29 -40.85L16.28 -40.78L16.31 -40.72L16.34 -40.66L16.34 -40.62L16.32 -40.56L16.28 -40.49L16.23 -40.47L16.17 -40.45L16.14 -40.39L16.12 -40.33L16.10 -40.29L16.08 -40.25L16.06 -40.15L16.05 -40.12L16.01 -40.08L15.95 -40.07L15.90 -40.07L15.86 -40.05L15.84 -40.02L15.80 -39.99L15.78 -39.98L15.78 -39.95L15.81 -39.89L15.84 -39.84L15.84 -39.80L15.82 -39.79L15.78 -39.80L15.77 -39.78L15.76 -39.74L15.75 -39.70L15.73 -39.68L15.70 -39.65L15.64 -39.66L15.59 -39.70L15.56 -39.71L15.54 -39.71L15.54 -39.80L15.51 -39.87L15.43 -40.04L15.14 -40.21L15.07 -40.28L15.04 -40.35L15.01 -40.41L15.04 -40.41L15.07 -40.39L15.11 -40.37L15.12 -40.41L15.10 -40.47L15.03 -40.62L15.03 -40.66L15.06 -40.79L15.12 -40.93L15.12 -41.11L15.14 -41.24L15.11 -41.32L15.11 -41.43L15.15 -41.56L15.19 -41.60L15.21 -41.64L15.21 -41.79L15.13 -41.86L15.03 -41.87Z", TR = "M20.18 -40.14L20.00 -40.11L19.95 -40.14L20.00 -40.20L20.11 -40.23L20.14 -40.24L20.18 -40.18L20.18 -40.14ZM32.25 -41.52L32.30 -41.50L32.40 -41.47L32.46 -41.44L32.50 -41.43L32.58 -41.50L32.70 -41.49L32.80 -41.49L32.85 -41.48L32.92 -41.45L33.00 -41.44L33.03 -41.47L33.08 -41.56L33.09 -41.57L33.11 -41.58L33.17 -41.59L33.22 -41.58L33.25 -41.56L33.27 -41.49L33.34 -41.47L33.46 -41.35L33.53 -41.31L33.54 -41.29L33.52 -41.27L33.53 -41.24L33.57 -41.20L33.63 -41.19L33.69 -41.19L33.72 -41.18L33.75 -41.16L33.75 -41.13L33.75 -41.11L33.76 -41.06L33.81 -41.01L33.87 -40.97L33.90 -40.93L33.95 -40.79L33.97 -40.72L33.97 -40.65L33.93 -40.57L33.85 -40.48L33.87 -40.44L33.89 -40.39L33.88 -40.36L33.94 -40.24L33.96 -40.17L33.94 -40.15L33.93 -40.13L34.03 -40.07L34.14 -40.02L34.19 -40.01L34.33 -40.04L34.41 -40.04L34.50 -40.00L34.62 -39.89L34.76 -39.75L34.78 -39.70L34.80 -39.68L34.82 -39.65L34.80 -39.65L34.75 -39.68L34.65 -39.77L34.59 -39.73L34.54 -39.67L34.49 -39.42L34.45 -39.40L34.37 -39.40L34.28 -39.40L34.22 -39.39L34.21 -39.38L34.21 -39.35L34.23 -39.31L34.25 -39.26L34.25 -39.22L34.28 -39.18L34.33 -39.14L34.33 -39.11L34.32 -39.06L34.31 -39.02L34.30 -38.99L34.32 -38.93L34.37 -38.86L34.40 -38.84L34.39 -38.70L34.40 -38.64L34.42 -38.56L34.41 -38.42L34.42 -38.39L34.44 -38.37L34.48 -38.37L34.52 -38.36L34.54 -38.34L34.54 -38.32L34.48 -38.26L34.48 -38.21L34.46 -38.15L34.44 -38.11L34.40 -38.04L34.37 -37.97L34.35 -37.91L34.36 -37.88L34.45 -37.87L34.50 -37.83L34.62 -37.74L34.65 -37.71L34.61 -37.66L34.61 -37.64L34.63 -37.61L34.64 -37.56L34.63 -37.51L34.63 -37.44L34.66 -37.42L34.74 -37.36L34.80 -37.29L34.81 -37.27L34.78 -37.22L34.78 -37.16L34.78 -37.14L34.76 -37.16L34.71 -37.17L34.66 -37.18L34.63 -37.16L34.57 -37.11L34.50 -37.06L34.44 -37.01L34.41 -36.98L34.38 -36.98L34.36 -37.01L34.35 -37.05L34.35 -37.20L34.34 -37.25L34.31 -37.28L34.28 -37.30L34.24 -37.31L34.20 -37.31L34.14 -37.27L34.06 -37.22L33.94 -37.23L33.85 -37.24L33.81 -37.24L33.65 -37.31L33.62 -37.32L33.55 -37.35L33.48 -37.37L33.36 -37.32L33.31 -37.34L33.24 -37.37L33.21 -37.36L33.13 -37.25L32.99 -37.13L32.91 -37.11L32.88 -37.23L32.84 -37.28L32.83 -37.28L32.79 -37.30L32.77 -37.29L32.68 -37.21L32.55 -37.16L32.44 -37.13L32.26 -37.09L32.12 -37.07L32.06 -37.07L31.94 -37.09L31.83 -37.11L31.71 -37.11L31.63 -37.10L31.43 -37.01L31.09 -36.83L30.84 -36.74L30.69 -36.70L30.58 -36.68L30.39 -36.68L30.23 -36.69L30.12 -36.69L30.06 -36.72L29.98 -36.79L29.87 -36.86L29.83 -36.88L29.76 -36.89L29.67 -36.90L29.45 -36.80L29.38 -36.77L29.31 -36.74L29.16 -36.68L29.09 -36.64L29.00 -36.65L28.89 -36.66L28.80 -36.65L28.74 -36.70L28.70 -36.76L28.58 -36.79L28.48 -36.80L28.46 -36.78L28.44 -36.70L28.40 -36.51L28.39 -36.46L28.47 -36.26L28.47 -36.23L28.41 -36.22L28.34 -36.22L28.30 -36.20L28.26 -36.17L28.24 -36.00L28.17 -35.97L28.13 -35.94L28.09 -35.83L28.07 -35.83L27.95 -35.91L27.89 -35.92L27.94 -36.00L27.88 -36.16L27.83 -36.31L27.88 -36.41L28.00 -36.52L28.12 -36.66L28.12 -36.74L28.11 -36.81L28.08 -36.85L28.01 -36.91L27.90 -36.85L27.82 -36.78L27.77 -36.76L27.71 -36.72L27.68 -36.65L27.61 -36.60L27.50 -36.57L27.33 -36.64L27.15 -36.73L27.05 -36.80L26.96 -36.82L26.89 -36.78L26.65 -36.60L26.44 -36.34L26.38 -36.30L26.18 -36.18L26.05 -36.14L25.98 -36.15L25.72 -36.10L25.58 -36.10L25.48 -36.04L25.28 -36.10L25.16 -36.18L25.08 -36.27L24.97 -36.45L24.88 -36.53L24.69 -36.61L24.36 -36.80L24.27 -36.82L24.05 -36.85L23.81 -36.87L23.76 -36.80L23.74 -36.53L23.70 -36.45L23.69 -36.31L23.66 -36.27L23.61 -36.24L23.54 -36.29L23.49 -36.31L23.38 -36.25L23.15 -36.17L23.07 -36.16L22.80 -36.26L22.71 -36.32L22.64 -36.40L22.62 -36.52L22.58 -36.59L22.58 -36.64L22.56 -36.69L22.51 -36.72L22.45 -36.67L22.39 -36.68L22.31 -36.70L22.13 -36.80L21.99 -36.81L21.91 -36.69L21.84 -36.65L21.77 -36.63L21.77 -36.67L21.82 -36.75L21.60 -36.74L21.49 -36.68L21.40 -36.68L21.33 -36.71L21.34 -36.75L21.41 -36.76L21.47 -36.79L21.71 -36.81L21.76 -36.83L21.82 -36.92L21.93 -37.00L21.95 -37.03L21.86 -37.03L21.50 -37.01L21.25 -37.02L21.22 -36.98L21.18 -36.98L21.17 -37.08L21.21 -37.13L21.27 -37.12L21.39 -37.16L21.38 -37.25L21.29 -37.31L21.27 -37.34L21.20 -37.35L21.15 -37.39L21.14 -37.49L21.10 -37.60L21.03 -37.66L21.04 -37.69L21.15 -37.73L21.18 -37.88L21.16 -37.98L21.10 -37.99L20.94 -38.06L20.89 -38.06L20.83 -38.14L20.73 -38.20L20.68 -38.18L20.65 -38.15L20.61 -38.16L20.54 -38.21L20.46 -38.24L20.43 -38.28L20.47 -38.37L20.52 -38.37L20.54 -38.44L20.49 -38.56L20.50 -38.62L20.54 -38.64L20.60 -38.63L20.66 -38.56L20.68 -38.49L20.66 -38.42L20.70 -38.35L20.73 -38.34L20.74 -38.41L20.77 -38.42L20.80 -38.39L20.87 -38.37L21.06 -38.41L21.09 -38.45L20.96 -38.45L20.91 -38.48L20.85 -38.56L20.82 -38.63L20.81 -38.66L20.80 -38.71L20.82 -38.74L20.91 -38.78L20.99 -38.89L20.96 -38.92L20.92 -38.93L20.87 -38.92L20.84 -38.96L20.83 -39.01L20.86 -39.06L20.87 -39.12L20.76 -39.26L20.73 -39.29L20.75 -39.34L20.84 -39.42L20.91 -39.52L20.90 -39.55L20.84 -39.56L20.58 -39.52L20.47 -39.48L20.29 -39.47L20.28 -39.52L20.28 -39.57L20.32 -39.66L20.32 -39.87L20.34 -39.99L20.45 -40.02L20.57 -40.20L20.78 -40.40L20.99 -40.40L21.07 -40.45L21.20 -40.46L21.22 -40.41L21.24 -40.38L21.35 -40.32L21.55 -40.33L21.59 -40.35L21.64 -40.38L21.55 -40.48L21.58 -40.51L21.66 -40.51L21.75 -40.49L21.75 -40.47L21.73 -40.44L21.70 -40.38L21.73 -40.37L21.98 -40.40L22.24 -40.38L22.33 -40.39L22.54 -40.39L22.58 -40.42L22.51 -40.47L22.45 -40.48L22.41 -40.50L22.37 -40.53L22.50 -40.63L22.58 -40.65L22.93 -40.71L23.19 -40.74L23.19 -40.76L23.15 -40.76L22.82 -40.81L22.73 -40.85L22.62 -40.94L22.60 -40.96L22.57 -41.01L22.59 -41.10L22.61 -41.18L22.65 -41.22L22.78 -41.23L23.25 -41.15L23.58 -41.20L23.94 -41.08L24.28 -41.11L24.36 -41.16L24.44 -41.32L24.93 -41.59L25.10 -41.73L25.29 -41.81L25.60 -41.89L25.86 -42.00L25.94 -42.02L26.57 -41.96L27.00 -41.96L27.20 -42.06L27.32 -42.03L27.31 -41.99L27.28 -41.96L27.29 -41.89L27.36 -41.79L27.43 -41.73L27.63 -41.63L27.91 -41.71L27.95 -41.70L28.01 -41.68L28.11 -41.43L28.19 -41.34L28.29 -41.27L28.37 -41.26L28.43 -41.33L28.47 -41.35L28.58 -41.36L28.74 -41.28L28.80 -41.18L29.08 -41.11L29.34 -41.08L29.46 -41.00L29.82 -40.93L29.96 -40.94L30.19 -41.02L30.63 -41.11L30.93 -40.98L31.01 -40.97L31.08 -40.98L31.18 -40.94L31.29 -40.96L31.61 -41.11L31.72 -41.19L31.83 -41.21L31.92 -41.26L32.18 -41.42L32.25 -41.52ZM21.77 -41.97L21.75 -41.86L21.79 -41.73L21.91 -41.56L22.02 -41.47L22.49 -41.25L22.58 -41.23L22.56 -41.14L22.53 -41.06L22.50 -41.01L22.36 -40.97L21.98 -41.07L21.89 -41.08L21.82 -41.06L21.70 -40.99L21.56 -41.01L21.37 -40.97L21.31 -40.84L21.18 -40.69L20.96 -40.56L20.80 -40.50L20.57 -40.26L20.46 -40.12L20.41 -40.10L20.36 -40.07L20.38 -40.14L20.40 -40.20L20.40 -40.25L20.40 -40.31L20.48 -40.39L20.55 -40.44L20.76 -40.54L20.82 -40.63L20.65 -40.62L20.48 -40.61L20.38 -40.62L20.28 -40.61L20.25 -40.68L20.23 -40.73L20.26 -40.74L20.29 -40.75L20.34 -40.83L20.39 -40.88L20.46 -40.95L20.48 -41.00L20.48 -41.04L20.46 -41.06L20.46 -41.10L20.45 -41.14L20.46 -41.24L20.62 -41.34L20.67 -41.35L20.69 -41.40L20.68 -41.51L20.65 -41.60L20.63 -41.61L20.59 -41.63L20.56 -41.66L20.52 -41.70L20.45 -41.72L20.45 -41.74L20.46 -41.77L20.48 -41.80L20.60 -41.83L20.61 -41.85L20.63 -41.90L20.65 -41.95L20.68 -41.97L20.73 -41.96L20.82 -41.98L20.89 -41.99L20.96 -42.03L20.99 -42.06L21.13 -42.08L21.17 -42.09L21.21 -42.08L21.26 -42.03L21.35 -41.95L21.39 -41.92L21.43 -41.93L21.49 -41.96L21.55 -41.96L21.60 -41.96L21.63 -41.98L21.66 -41.99L21.77 -41.97Z";
+var VIEWS = { tr:[25.2*K, -42.6, (45.3-25.2)*K, 7.4], world:[-180*K, -84, 360*K, 142] };
+function mapSvg(view, pins, sel, onPin, onTap){
+  var vb = VIEWS[view], svg = sv("svg", {viewBox: vb.join(" "), role:"img", "aria-label": view === "tr" ? "Türkiye haritası" : "Dünya haritası"});
+  svg.appendChild(sv("rect", {x:vb[0], y:vb[1], width:vb[2], height:vb[3], "class":"sea"}));
+  svg.appendChild(sv("path", {d:WORLD, "class":"land"}));
+  if(view === "tr") svg.appendChild(sv("path", {d:NEAR, "class":"land"}));
+  svg.appendChild(sv("path", {d:TR, "class":"home"}));
+  var r = vb[2] / 60;
+  pins.forEach(function(p){
+    var x = p.kon[1] * K, y = -p.kon[0];
+    svg.appendChild(sv("circle", {cx:x, cy:y, r: p.key === sel ? r * 1.25 : r, "class":"pin" + (p.plan ? " plan" : "") + (p.key === sel ? " sel" : "")}));
+    if(onPin){
+      var h = sv("circle", {cx:x, cy:y, r:r * 2.4, "class":"hit", tabindex:"0", role:"button", "aria-label": p.label});
+      h.addEventListener("click", function(e){ e.stopPropagation(); onPin(p.key); });
+      h.addEventListener("keydown", function(e){ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); onPin(p.key); } });
+      svg.appendChild(h);
+    }
+  });
+  if(onTap) svg.addEventListener("click", function(e){
+    var pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    var q = pt.matrixTransform(svg.getScreenCTM().inverse());
+    onTap([Math.round(-q.y * 1000) / 1000, Math.round(q.x / K * 1000) / 1000]);
+  });
+  return svg;
+}
+function inTR(k){ return k[0] > 35.6 && k[0] < 42.4 && k[1] > 25.4 && k[1] < 45.1; }
+function pinKey(k){ return k[0].toFixed(1) + "_" + k[1].toFixed(1); }
+
+/* ---------- rendering ---------- */
+function route(){ var h = (location.hash || "").replace("#", ""); for(var i = 0; i < TABS.length; i++) if(TABS[i][0] === h) return h; return "akis"; }
+function canEdit(){ return S.db && S.canWrite !== false; }
+
+function card(d){
+  var t = T[d.tip] || T.ani, c = el("article", "card " + (d.tip || "ani")), head = el("div", "head");
+  head.appendChild(el("span", "chip " + t.c, t.ad));
+  if(d.durum === "istek" && t.wl) head.appendChild(el("span", "chip wish", t.wl));
+  var meta = [d.tarih ? niceDate(d.tarih, d.tip === "gun") : "", d.yer || ""].filter(Boolean).join(" · ");
+  if(meta) head.appendChild(el("span", "meta", meta));
+  head.appendChild(el("h3", null, d.baslik || "Adsız kayıt"));
+  c.appendChild(head);
+  if(d.tip === "gun" && d.tarih){
+    var n = nextOf(d.tarih), txt = n.days === 0 ? "Bugün" : n.days === 1 ? "Yarın" : n.days + " gün kaldı";
+    if(n.years > 0) txt += " · " + n.years + ". yıl";
+    c.appendChild(el("div", "count", txt));
+  }
+
+  if(d.tip === "yer" && d.durum === "istek" && d.tarih){
+    var kd = dayNo(parse(d.tarih)) - dayNo(new Date());
+    c.classList.add("planli"); c.appendChild(el("div", "count plan", kd === 0 ? "Bugün gidiyoruz" : kd === 1 ? "Yarın gidiyoruz" : kd > 1 ? kd + " gün kaldı" : "Planlanan tarih geçti"));
+  }
+  var fs = (d.foto || []).filter(photoSrc);
+  if(fs.length){
+    var g = el("div", "photos" + (fs.length > 1 ? " many" : ""));
+    fs.forEach(function(f){
+      var b = el("button"); b.type = "button"; b.setAttribute("aria-label", "Fotoğrafı büyüt");
+      var im = el("img"); im.loading = "lazy"; im.alt = ""; im.src = photoSrc(f);
+      im.addEventListener("error", function(){ b.hidden = true; });
+      b.appendChild(im); b.addEventListener("click", function(){ $("boximg").src = im.src; $("box").hidden = false; });
+      g.appendChild(b);
+    });
+    c.appendChild(g);
+  }
+  if(d.not) c.appendChild(el("p", "note", d.not));
+
+  if(t.stars && d.durum !== "istek"){
+    var st = el("div", "stars"), y = d.yildiz || {};
+    if(S.uid && canEdit()){
+      var row = el("div", "row"); row.appendChild(el("span", "who", "Senin puanın"));
+      for(var i = 1; i <= 5; i++) (function(n){
+        var b = el("button", (y[S.uid] || 0) >= n ? "on" : "", "★"); b.type = "button"; b.setAttribute("aria-label", n + " yıldız");
+        b.addEventListener("click", function(){ var u = {}; u[S.uid] = n; write(d._id, function(){ return ref(d._id).update({yildiz: u}); }); });
+        row.appendChild(b);
+      })(i);
+      st.appendChild(row);
+    }
+    Object.keys(y).forEach(function(k){
+      if(k === S.uid && canEdit()) return;
+      var r = el("div", "row"); r.appendChild(el("span", "who", nameOf(k)));
+      var ro = el("span", "ro"); ro.appendChild(el("b", null, "★★★★★".slice(0, y[k]))); ro.appendChild(document.createTextNode("★★★★★".slice(0, 5 - y[k])));
+      ro.setAttribute("aria-label", y[k] + " yıldız"); r.appendChild(ro); st.appendChild(r);
+    });
+    if(st.children.length) c.appendChild(st);
+  }
+
+  var cms = d.yorumlar || [];
+  if(d.tip !== "gun" && (cms.length || canEdit())){
+    var box = el("div", "comments");
+    cms.forEach(function(m){
+      var p = el("div", "cm"); p.appendChild(el("b", null, nameOf(m.k) + ": ")); p.appendChild(document.createTextNode(m.m || ""));
+      if(m.z) p.appendChild(el("time", null, niceTime(m.z))); box.appendChild(p);
+    });
+    if(canEdit()){
+      var f = el("form", "cmform"), inp = el("input"); inp.type = "text"; inp.maxLength = 600; inp.id = "cm-" + d._id;
+      inp.placeholder = "Yorum yaz"; inp.setAttribute("aria-label", "Yorum yaz"); inp.value = S.drafts[inp.id] || "";
+      inp.addEventListener("input", function(){ S.drafts[inp.id] = inp.value; });
+      inp.addEventListener("focus", function(){ S.focusId = inp.id; });
+      inp.addEventListener("blur", function(){ if(S.focusId === inp.id) S.focusId = null; });
+      var send = el("button", "btn", "Gönder"); send.type = "submit";
+      f.appendChild(inp); f.appendChild(send);
+      f.addEventListener("submit", function(e){
+        e.preventDefault(); var tx = inp.value.trim(); if(!tx) return;
+        var next = cms.map(function(x){ return {k:x.k || null, m:x.m || "", z:x.z || 0}; }); next.push({k:S.uid, m:tx, z:Date.now()});
+        S.drafts[inp.id] = "";
+        write(d._id, function(){ return ref(d._id).update({yorumlar: next}); });
+      });
+      box.appendChild(f);
+    }
+    c.appendChild(box);
+  }
+
+  var acts = el("div", "acts");
+  acts.appendChild(el("span", "by", d.ekleyen ? "Ekleyen: " + nameOf(d.ekleyen) : ""));
+  if(canEdit()){
+    if(d.durum === "istek" && t.done){
+      var done = el("button", "btn", t.done); done.type = "button";
+      done.addEventListener("click", function(){
+        if(d.tip === "yapilacak") setPage(d._id);
+        var u = d.tip === "yapilacak" ? {tip:"ani", durum:"oldu", tarih: today()} : {durum:"oldu", tarih: d.tarih && d.tarih <= today() ? d.tarih : today()};
+        write(d._id, function(){ return ref(d._id).update(u); }).then(function(){ if(d.tip === "yapilacak") flash("“" + (d.baslik || "") + "” Anı defteri'ne eklendi."); });
+      });
+      acts.appendChild(done);
+    }
+    var ed = el("button", "btn ghost", "Düzenle"); ed.type = "button"; ed.addEventListener("click", function(){ openForm(d); }); acts.appendChild(ed);
+    if(S.confirmDel === d._id){
+      var yes = el("button", "btn danger", "Evet, sil"); yes.type = "button";
+      yes.addEventListener("click", function(){ S.confirmDel = null; write(d._id, function(){ return ref(d._id).delete(); }); });
+      var no = el("button", "btn ghost", "Vazgeç"); no.type = "button"; no.addEventListener("click", function(){ S.confirmDel = null; render(); });
+      acts.appendChild(yes); acts.appendChild(no);
+    } else {
+      var del = el("button", "btn ghost", "Sil"); del.type = "button"; del.addEventListener("click", function(){ S.confirmDel = d._id; render(); }); acts.appendChild(del);
+    }
+  }
+  c.appendChild(acts);
+  return c;
+}
+
+function section(main, title, sub, items, emptyText, hint){
+  var h = el("div", "day"); h.appendChild(el("h2", null, title)); if(sub) h.appendChild(el("span", null, sub)); main.appendChild(h);
+  if(hint) main.appendChild(el("p", "sec-hint", hint));
+  if(!items.length){ if(emptyText) main.appendChild(el("div", "empty", emptyText)); return; }
+  var l = el("div", "list"); items.forEach(function(d){ l.appendChild(card(d)); }); main.appendChild(l);
+}
+function byNew(a, b){ return (b.tarih || "").localeCompare(a.tarih || "") || (b.z || 0) - (a.z || 0); }
+
+function renderTabs(r){
+  var nav = $("tabs");
+  if(!nav.children.length) TABS.forEach(function(t){ var a = el("a", null, t[1]); a.href = "#" + t[0]; a.id = "t-" + t[0]; nav.appendChild(a); });
+  TABS.forEach(function(t){ var a = $("t-" + t[0]); if(t[0] === r) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+}
+
+function renderSoru(main){
+  var id = today(), doc = S.qs[id] || {}, q = doc.soru || SORULAR[dayNo(new Date()) % SORULAR.length], c = doc.c || {};
+  var h = el("div", "day"); h.appendChild(el("h2", null, "Bugünün sorusu")); h.appendChild(el("span", null, niceDate(id, true))); main.appendChild(h);
+  var cd = el("article", "card soz"), hd = el("div", "head"); hd.appendChild(el("h3", null, q)); cd.appendChild(hd);
+  var mine = S.uid ? c[S.uid] : null, others = Object.keys(c).filter(function(k){ return k !== S.uid; });
+  var qa = el("div", "qa");
+  if(mine){
+    var a = el("div", "ans"); a.appendChild(el("b", null, "Senin cevabın")); a.appendChild(el("p", null, mine)); qa.appendChild(a);
+    if(others.length) others.forEach(function(k){ var o = el("div", "ans"); o.appendChild(el("b", null, nameOf(k))); o.appendChild(el("p", null, c[k])); qa.appendChild(o); });
+    else { var w = el("div", "ans wait"); w.appendChild(el("p", null, "Diğer cevap henüz gelmedi. Gelince burada görünecek.")); qa.appendChild(w); }
+  } else if(S.uid && canEdit()){
+    if(others.length){ var w2 = el("div", "ans wait"); w2.appendChild(el("p", null, nameOf(others[0]) + " cevabını yazdı. Sen de yazınca ikisi birden açılır.")); qa.appendChild(w2); }
+    var ta = el("textarea"); ta.id = "soru-cevap"; ta.maxLength = 1200; ta.setAttribute("aria-label", "Cevabın"); ta.placeholder = "Cevabını yaz"; ta.value = S.drafts[ta.id] || "";
+    ta.addEventListener("input", function(){ S.drafts[ta.id] = ta.value; });
+    ta.addEventListener("focus", function(){ S.focusId = ta.id; }); ta.addEventListener("blur", function(){ if(S.focusId === ta.id) S.focusId = null; });
+    var sb = el("button", "btn cap", "Cevabımı kaydet"); sb.type = "button";
+    sb.addEventListener("click", function(){
+      var tx = ta.value.trim(); if(!tx) return; sb.disabled = true;
+      var r = S.db.collection(QCOL).doc(id), u = {}; u[S.uid] = tx;
+      r.get().then(function(s){ return s.exists ? r.update({c: u}) : r.set({soru: q, c: u, z: Date.now()}); })
+       .then(function(){ S.drafts[ta.id] = ""; }).catch(function(e){ flash(errText(e)); sb.disabled = false; });
+    });
+    qa.appendChild(ta); var ar = el("div", "acts"); ar.appendChild(sb); qa.appendChild(ar);
+  } else {
+    var w3 = el("div", "ans wait"); w3.appendChild(el("p", null, "Cevap yazmak için panoya yazma iznin olması gerekiyor.")); qa.appendChild(w3);
+  }
+  cd.appendChild(qa); main.appendChild(cd);
+  var past = Object.keys(S.qs).filter(function(k){ return k < id; }).sort().reverse();
+  if(past.length){
+    var h2 = el("div", "day"); h2.appendChild(el("h2", null, "Önceki sorular")); h2.appendChild(el("span", null, past.length + " soru")); main.appendChild(h2);
+    var l = el("div", "list");
+    past.forEach(function(k){
+      var p = S.qs[k], pc = el("article", "card soz"), ph = el("div", "head"); ph.appendChild(el("span", "meta", niceDate(k))); ph.appendChild(el("h3", null, p.soru || "")); pc.appendChild(ph);
+      var pq = el("div", "qa"); Object.keys(p.c || {}).forEach(function(u){ var o = el("div", "ans"); o.appendChild(el("b", null, nameOf(u))); o.appendChild(el("p", null, p.c[u])); pq.appendChild(o); });
+      pc.appendChild(pq); l.appendChild(pc);
+    });
+    main.appendChild(l);
+  }
+}
+
+function renderHarita(main){
+  var withPin = S.docs.filter(function(d){ return d.kon && d.kon.length === 2 && (d.durum !== "istek" || d.tip === "yer"); });
+  var groups = {}; withPin.forEach(function(d){ var k = pinKey(d.kon); (groups[k] = groups[k] || {key:k, kon:d.kon, items:[]}).items.push(d); });
+  var pins = Object.keys(groups).map(function(k){ var g = groups[k]; g.label = g.items[0].tip === "yer" ? g.items[0].baslik || g.items[0].yer : g.items[0].yer || g.items[0].baslik || "İğne"; g.plan = g.items.every(function(x){ return x.durum === "istek"; }); return g; });
+  var shown = S.mapView === "tr" ? pins.filter(function(p){ return inTR(p.kon); }) : pins;
+  var tools = el("div", "maptools");
+  tools.appendChild(el("span", null, pins.length ? pins.length + " iğne, " + withPin.length + " kayıt" : "Haritada henüz iğne yok"));
+  var tg = el("button", "btn onboard", S.mapView === "tr" ? "Dünya haritası" : "Türkiye haritası"); tg.type = "button";
+  tg.addEventListener("click", function(){ S.mapView = S.mapView === "tr" ? "world" : "tr"; render(); }); tools.appendChild(tg);
+  main.appendChild(tools);
+  var mb = el("div", "mapbox"); mb.appendChild(mapSvg(S.mapView, shown, S.pin, function(k){ S.pin = S.pin === k ? null : k; render(); })); main.appendChild(mb);
+  var lg = el("div", "legend"), l1 = el("span"), l2 = el("span"); l1.appendChild(el("i")); l1.appendChild(document.createTextNode("Gittik")); l2.appendChild(el("i", "p")); l2.appendChild(document.createTextNode("Gideceğiz")); lg.appendChild(l1); lg.appendChild(l2); main.appendChild(lg);
+  if(S.pin && groups[S.pin]) section(main, groups[S.pin].label, groups[S.pin].items.length + " kayıt", groups[S.pin].items.sort(byNew));
+  else main.appendChild(el("p", "sec-hint", pins.length ? "Bir iğneye dokununca o yerdeki kayıtlar aşağıda açılır." : ""));
+  var rest = S.docs.filter(function(d){ return !d.kon && d.durum !== "istek" && (d.tip === "yer" || d.tip === "lezzet" || (d.tip === "ani" && d.yer)); });
+  var h = el("div", "day"); h.style.marginTop = "22px"; h.appendChild(el("h2", null, "Haritaya eklenmeyi bekleyenler")); h.appendChild(el("span", null, rest.length + " kayıt")); main.appendChild(h);
+  main.appendChild(el("p", "sec-hint", "Bir kayıtta Düzenle'ye basıp “Haritada işaretle” ile yerini seçince iğnesi haritaya eklenir."));
+  if(rest.length){ var l = el("div", "list"); rest.slice(0, 12).forEach(function(d){ l.appendChild(card(d)); }); main.appendChild(l); }
+}
+
+function defterList(){
+  var f = S.docs.filter(function(d){ return d.durum !== "istek" && (d.tip === "ani" || d.tip === "yer" || d.tip === "lezzet"); });
+  var und = f.filter(function(d){ return !d.tarih; }).sort(function(a, b){ return (a.sira || 1e9) - (b.sira || 1e9) || (a.z || 0) - (b.z || 0); });
+  var dat = f.filter(function(d){ return d.tarih; }).sort(function(a, b){ return a.tarih.localeCompare(b.tarih) || (a.z || 0) - (b.z || 0); });
+  return und.concat(dat);
+}
+function setPage(id){ S.pageId = id; try{ localStorage.setItem("pano-sayfa", id); }catch(e){} }
+function turn(n){
+  if(route() !== "akis") return;
+  var L = defterList(), i = 0; L.forEach(function(d, k){ if(d._id === S.pageId) i = k; });
+  var j = Math.max(0, Math.min(L.length - 1, n === "son" ? L.length - 1 : n === "ilk" ? 0 : i + n));
+  if(!L.length || j === i) return; setPage(L[j]._id); S.confirmDel = null; render(); window.scrollTo(0, 0);
+}
+function pager(i, N){
+  var p = el("div", "pager"), a = el("button", "btn onboard", "‹ Önceki"), b = el("button", "btn onboard", "Sonraki ›"), m = el("div", "mid");
+  a.type = b.type = "button"; a.disabled = i === 0; b.disabled = i === N - 1;
+  a.addEventListener("click", function(){ turn(-1); }); b.addEventListener("click", function(){ turn(1); });
+  m.appendChild(el("span", null, "Sayfa " + (i + 1) + " / " + N));
+  var j = el("button", null, i === N - 1 ? "İlk sayfa" : "Son sayfa"); j.type = "button"; j.addEventListener("click", function(){ turn(i === N - 1 ? "ilk" : "son"); }); m.appendChild(j);
+  p.appendChild(a); p.appendChild(m); p.appendChild(b); return p;
+}
+function renderDefter(main){
+  var L = defterList();
+  if(!L.length){ main.appendChild(el("div", "empty", "Defter boş. İlk sayfayı “Yeni kayıt” ile ekleyin; her anı kendi sayfasında durur.")); return; }
+  var i = 0; L.forEach(function(d, k){ if(d._id === S.pageId) i = k; });
+  var d = L[i];
+  main.appendChild(pager(i, L.length));
+  var h = el("div", "day"); h.style.marginTop = "6px"; h.appendChild(el("h2", null, d.tarih ? niceDate(d.tarih, true) : "Tarihi yazılmamış")); h.appendChild(el("span", null, d.tarih ? weekday(d.tarih) : "Düzenle ile tarih ekleyebilirsin")); main.appendChild(h);
+  var c = card(d); c.classList.add("page"); main.appendChild(c);
+  var x0 = null;
+  c.addEventListener("pointerdown", function(e){ x0 = e.target.closest("input,textarea,button,select") ? null : e.clientX; });
+  c.addEventListener("pointerup", function(e){ if(x0 == null) return; var dx = e.clientX - x0; x0 = null; if(Math.abs(dx) > 70) turn(dx < 0 ? 1 : -1); });
+  c.addEventListener("pointercancel", function(){ x0 = null; });
+  main.appendChild(pager(i, L.length));
+}
+function renderFoto(main){
+  var items = []; defterList().forEach(function(d){ (d.foto || []).forEach(function(f){ if(photoSrc(f)) items.push({d:d, f:f}); }); });
+  var h = el("div", "day"); h.appendChild(el("h2", null, "Fotoğraflar")); h.appendChild(el("span", null, items.length + " fotoğraf")); main.appendChild(h);
+  if(!items.length){ main.appendChild(el("div", "empty", "Henüz fotoğraf yok. Anı defterine fotoğraflı bir sayfa ekleyince burada görünür.")); return; }
+  main.appendChild(el("p", "sec-hint", "Eskiden yeniye sıralı. Bir fotoğrafa dokununca defterdeki sayfası açılır."));
+  var g = el("div", "grid3");
+  items.forEach(function(it){
+    var b = el("button"); b.type = "button"; b.setAttribute("aria-label", (it.d.baslik || "Anı") + " sayfasını aç");
+    var im = el("img"); im.loading = "lazy"; im.alt = ""; im.src = photoSrc(it.f); im.addEventListener("error", function(){ b.hidden = true; });
+    b.appendChild(im); b.addEventListener("click", function(){ setPage(it.d._id); location.hash = "#akis"; }); g.appendChild(b);
+  });
+  main.appendChild(g);
+}
+
+function renderX(main){
+  var d = S.docs.filter(function(x){ return x._id === "x-sayac"; })[0], n = d ? d.n || 0 : 0;
+  var t = el("div", "together"); t.appendChild(el("b", null, String(n))); t.appendChild(el("span", null, "Toplam X")); main.appendChild(t);
+  if(!canEdit()) return;
+  var row = el("div", "xbtns"), plus = el("button", "btn cap", "+1 ekle"), minus = el("button", "btn onboard", "−1 geri al"); plus.type = minus.type = "button";
+  function bump(k){ write("x-sayac", function(){ return d ? ref("x-sayac").update({n: Math.max(0, n + k)}) : ref("x-sayac").set({tip:"sayac", n: Math.max(0, k)}); }); }
+  plus.addEventListener("click", function(){ bump(1); }); minus.addEventListener("click", function(){ bump(-1); }); minus.disabled = n === 0;
+  row.appendChild(plus); row.appendChild(minus); main.appendChild(row);
+}
+
+function render(){
+  var r = route(), main = $("main"), keepY = window.scrollY;
+  renderTabs(r);
+  $("add").hidden = !(S.loaded && canEdit()) || r === "soru" || r === "x";
+  main.textContent = "";
+  if(!S.loaded) return;
+  var all = S.docs;
+  if(r === "akis"){ renderDefter(main);
+  } else if(r === "fotograflar"){ renderFoto(main);
+  } else if(r === "soru"){ renderSoru(main);
+  } else if(r === "x"){ renderX(main);
+  } else if(r === "harita"){ renderHarita(main);
+  } else if(r === "yapilacaklar"){
+    var todo = all.filter(function(d){ return d.tip === "yapilacak"; }).sort(function(a, b){ return (b.z || 0) - (a.z || 0); });
+    section(main, "Birlikte yapacaklarımız", todo.length + " madde", todo, "Liste boş. Birlikte yapmak istediğiniz ilk şeyi ekleyin: bir konser, bir kamp, yeni bir tarif.", "“Yaptık” dediğiniz madde bugünün tarihiyle Anı defteri'ne yeni sayfa olarak eklenir.");
+  } else if(r === "ozel-gunler"){
+    var gl = all.filter(function(d){ return d.tip === "gun" && d.tarih; });
+    var bas = gl.filter(function(d){ return d.bas; })[0];
+    if(bas){ var tg = el("div", "together"), n = dayNo(new Date()) - dayNo(parse(bas.tarih)) + 1;
+      tg.appendChild(el("b", null, String(Math.max(n, 1)))); tg.appendChild(el("span", null, "Birlikte " + Math.max(n, 1) + ". günümüz. Başlangıç: " + niceDate(bas.tarih, true))); main.appendChild(tg); }
+    gl.sort(function(a, b){ return nextOf(a.tarih).days - nextOf(b.tarih).days; });
+    section(main, "Özel günlerimiz", gl.length + " gün", gl, "Henüz özel gün eklenmedi. Tanışma gününüzü, doğum günlerini ve yıl dönümlerini ekleyin.", bas ? "En yakın gün en üstte." : "Birlikte olmaya başladığınız günü ekleyip işaretlerseniz burada gün sayacı görünür.");
+  } else {
+    var tip = TABTIP[r], t = T[tip];
+    var mine = all.filter(function(d){ return d.tip === tip; });
+    var doneL = mine.filter(function(d){ return d.durum !== "istek"; }).sort(byNew), wish = mine.filter(function(d){ return d.durum === "istek"; }).sort(function(a, b){ return (a.tarih || "9").localeCompare(b.tarih || "9") || (b.z || 0) - (a.z || 0); });
+    section(main, t.h1, doneL.length + " kayıt", doneL, t.e1);
+    if(t.wish) section(main, t.h2, wish.length + " kayıt", wish, t.e2);
+  }
+  window.scrollTo(0, keepY);
+  if(S.focusId){ var fi = $(S.focusId); if(fi){ fi.focus(); try{ fi.setSelectionRange(fi.value.length, fi.value.length); }catch(e){} } }
+}
+window.addEventListener("hashchange", function(){
+  window.scrollTo(0, 0); S.pin = null; render();
+  var a = $("t-" + route()); if(a && a.scrollIntoView) a.scrollIntoView({block:"nearest", inline:"center"});
+});
+
+/* ---------- add / edit form ---------- */
+var F = { editing:null, keep:[], kon:null, view:"tr", open:false };
+Object.keys(T).forEach(function(k){ var o = el("option", null, T[k].ad); o.value = k; $("f-tip").appendChild(o); });
+function tipNow(){ return $("f-tip").value || "ani"; }
+function drawPin(){
+  $("pinstate").textContent = F.kon ? "İğne yerleştirildi." : "Henüz işaretlenmedi.";
+  $("pinclear").hidden = !F.kon; $("pinview").hidden = !F.open; $("pinmap").hidden = !F.open;
+  $("pintoggle").textContent = F.open ? "Haritayı kapat" : F.kon ? "İğneyi değiştir" : "Haritada işaretle";
+  $("pinview").textContent = F.view === "tr" ? "Dünya haritası" : "Türkiye haritası";
+  var m = $("pinmap"); m.textContent = "";
+  if(F.open) m.appendChild(mapSvg(F.view, F.kon ? [{key:"x", kon:F.kon}] : [], "x", null, function(k){ F.kon = k; drawPin(); }));
+}
+$("pintoggle").addEventListener("click", function(){ F.open = !F.open; if(F.open && F.kon && !inTR(F.kon)) F.view = "world"; drawPin(); });
+$("pinview").addEventListener("click", function(){ F.view = F.view === "tr" ? "world" : "tr"; drawPin(); });
+$("pinclear").addEventListener("click", function(){ F.kon = null; drawPin(); });
+function syncForm(){
+  var t = T[tipNow()];
+  $("l-baslik").textContent = t.l;
+  $("wishrow").hidden = !t.wish; $("l-istek").textContent = t.wish || "";
+  $("basrow").hidden = tipNow() !== "gun";
+  $("tarihbox").hidden = !!t.noDate; $("yerbox").hidden = !t.yerL; $("l-yer").textContent = t.yerL || "Yer";
+  $("row2").hidden = !!t.noDate && !t.yerL; $("row2").className = "two" + (t.noDate || !t.yerL ? " one" : "");
+  $("l-tarih").textContent = tipNow() === "gun" ? "Tarih (ilk yılıyla)" : tipNow() === "yer" && $("f-istek").checked ? "Ne zaman gideceğiz?" : "Tarih";
+  $("l-not").textContent = t.notL || "Not";
+  $("pinbox").hidden = !t.pin;
+  $("photorow").hidden = !!t.noFoto || (!S.assets && !F.keep.length);
+  $("f-foto").hidden = !S.assets;
+}
+$("f-tip").addEventListener("change", syncForm);
+$("f-istek").addEventListener("change", function(){ if($("f-istek").checked) $("f-tarih").value = ""; syncForm(); });
+function drawThumbs(){
+  var t = $("thumbs"); t.textContent = "";
+  F.keep.forEach(function(f, i){
+    var w = el("div"), im = el("img"); im.alt = ""; im.src = photoSrc(f);
+    var x = el("button", null, "×"); x.type = "button"; x.setAttribute("aria-label", "Fotoğrafı kayıttan çıkar");
+    x.addEventListener("click", function(){ F.keep.splice(i, 1); drawThumbs(); });
+    w.appendChild(im); w.appendChild(x); t.appendChild(w);
+  });
+}
+function openForm(d){
+  F.editing = d || null; F.keep = d ? (d.foto || []).slice() : []; F.kon = d && d.kon ? d.kon.slice() : null; F.open = false; F.view = "tr";
+  $("formtitle").textContent = d ? "Kaydı düzenle" : "Yeni kayıt";
+  var r = route(), t = d ? d.tip || "ani" : r === "harita" ? "yer" : TABTIP[r] || "ani";
+  $("f-tip").value = t;
+  $("f-baslik").value = d ? d.baslik || "" : ""; $("f-tarih").value = d ? d.tarih || "" : t === "gun" ? "" : today();
+  $("f-yer").value = d ? d.yer || "" : ""; $("f-not").value = d ? d.not || "" : "";
+  $("f-istek").checked = !!d && d.durum === "istek"; $("f-bas").checked = !!d && !!d.bas; $("f-foto").value = ""; $("formmsg").textContent = "";
+  $("save").disabled = false; $("save").textContent = "Kaydet";
+  drawThumbs(); drawPin(); syncForm(); $("sheet").hidden = false; $("f-baslik").focus();
+}
+function closeForm(){ $("sheet").hidden = true; }
+$("add").addEventListener("click", function(){ openForm(null); });
+$("cancel").addEventListener("click", closeForm);
+$("sheet").addEventListener("click", function(e){ if(e.target === $("sheet")) closeForm(); });
+
+function shrink(file){
+  return new Promise(function(resolve, reject){
+    var url = URL.createObjectURL(file), im = new Image();
+    im.onload = function(){
+      var m = 1600, s = Math.min(1, m / Math.max(im.naturalWidth, im.naturalHeight));
+      var c = document.createElement("canvas"); c.width = Math.round(im.naturalWidth * s); c.height = Math.round(im.naturalHeight * s);
+      c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      c.toBlob(function(b){ b ? resolve(b) : reject({code:"unsupported_type"}); }, "image/jpeg", 0.84);
+    };
+    im.onerror = function(){ URL.revokeObjectURL(url); reject({code:"unsupported_type"}); };
+    im.src = url;
+  });
+}
+$("form").addEventListener("submit", function(e){
+  e.preventDefault();
+  var baslik = $("f-baslik").value.trim(); if(!baslik){ $("formmsg").textContent = "Bir başlık yaz."; return; }
+  var tip = tipNow(), t = T[tip];
+  if(tip === "gun" && !$("f-tarih").value){ $("formmsg").textContent = "Özel günün tarihini seç."; return; }
+  var files = S.assets && !t.noFoto ? Array.prototype.slice.call($("f-foto").files || []) : [];
+  var btn = $("save"); btn.disabled = true; btn.textContent = files.length ? "Fotoğraflar yükleniyor…" : "Kaydediliyor…"; $("formmsg").textContent = "";
+  var foto = t.noFoto ? [] : F.keep.slice(), chain = Promise.resolve();
+  files.forEach(function(file){
+    chain = chain.then(function(){ return shrink(file); }).then(function(b){ return S.assets.upload(b, {type:"image/jpeg"}); }).then(function(r){ foto.push({id:r.id}); });
+  });
+  chain.then(function(){
+    var istek = tip === "yapilacak" || (!!t.wish && $("f-istek").checked);
+    var data = { tip:tip, baslik:baslik, tarih: t.noDate || (istek && tip !== "yer") ? "" : $("f-tarih").value || "", yer: t.yerL ? $("f-yer").value.trim() : "", not:$("f-not").value.trim(),
+                 durum: istek ? "istek" : "oldu", foto:foto, kon: t.pin && F.kon ? F.kon : null, bas: tip === "gun" && $("f-bas").checked };
+    if(F.editing) return ref(F.editing._id).update(data);
+    data.ekleyen = S.uid || null; data.z = Date.now(); data.yorumlar = []; data.yildiz = {};
+    var nr = S.db.collection(COL).doc(); if(!istek && (tip === "ani" || tip === "yer" || tip === "lezzet")) setPage(nr.id);
+    return nr.set(data);
+  }).then(function(){
+    closeForm();
+    var want = t.tab, r = route();
+    if(!F.editing && r !== want && !(r === "akis" && want !== "yapilacaklar" && want !== "ozel-gunler") && !(r === "harita")) location.hash = "#" + want;
+  }).catch(function(err){
+    if(err && err.code === "invalid_argument") S.canWrite = false;
+    $("formmsg").textContent = errText(err); btn.disabled = false; btn.textContent = "Kaydet";
+  });
+});
+
+$("box").addEventListener("click", function(){ $("box").hidden = true; });
+document.addEventListener("keydown", function(e){
+  if((e.key === "ArrowRight" || e.key === "ArrowLeft") && $("sheet").hidden && $("box").hidden && !(e.target.closest && e.target.closest("input,textarea,select"))){ turn(e.key === "ArrowRight" ? 1 : -1); return; }
+  if(e.key === "Escape"){ if(!$("box").hidden) $("box").hidden = true; else if(!$("sheet").hidden) closeForm(); } });
+
+try{ S.pageId = localStorage.getItem("pano-sayfa"); }catch(e){}
+render(); start();
+})();
+</script>
+</body>
+</html>
